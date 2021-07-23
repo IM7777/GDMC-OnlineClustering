@@ -1,4 +1,7 @@
-package GDMC;
+package GDMC.operate;
+
+import GDMC.model.Grid;
+import GDMC.model.Point;
 
 import java.util.ArrayList;
 

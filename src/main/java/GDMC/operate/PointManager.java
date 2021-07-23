@@ -1,4 +1,6 @@
-package GDMC;
+package GDMC.operate;
+
+import GDMC.model.Point;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package GDMC;
+package GDMC.model;
 
 import java.util.Arrays;
 

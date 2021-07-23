@@ -1,5 +1,12 @@
 package GDMC;
 
+import GDMC.model.Grid;
+import GDMC.model.Point;
+import GDMC.operate.GDPCluster;
+import GDMC.operate.GridManager;
+import GDMC.operate.PointManager;
+import GDMC.operate.ResultViewer;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -20,7 +27,7 @@ public class mainProcessor {
         points = pm.getPoints();
 
         int t = 0;
-        GridManager gm = new GridManager(1.0, 0.1);
+        GridManager gm = new GridManager(1.0, 0.08);
         while (t < initNum) {
             Point curPoint = points.get(t);
             gm.mapToGrid(curPoint);
@@ -28,11 +35,15 @@ public class mainProcessor {
         }
         grids = gm.getGrids();
 
-        GDPCluster gdpCluster = new GDPCluster(grids, 5.0, 0.25);
+        GDPCluster gdpCluster = new GDPCluster(grids, 11.0, 0.26);
         gdpCluster.calDelta();
         gdpCluster.findCenters();
         gdpCluster.assignLabel();
         gdpCluster.info();
+
+        ResultViewer rv = new ResultViewer(gdpCluster.getClusters());
+        rv.showChart();
+
 
 
     }
