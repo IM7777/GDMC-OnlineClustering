@@ -1,7 +1,12 @@
-package GDMC;
+package GDMC.operate;
+
+import GDMC.model.Cluster;
+import GDMC.model.Grid;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by jxm on 2021/7/17.
@@ -11,6 +16,7 @@ public class GDPCluster {
     private double rhoThreshold;
     private double deltaThreshold;
     private ArrayList<Grid> centers;
+    private Map<Integer, Cluster> clusters;
 
     public GDPCluster(ArrayList<Grid> grids, double rhoThreshold, double deltaThreshold) {
         this.grids = grids;
@@ -87,4 +93,18 @@ public class GDPCluster {
         }
     }
 
+    public Map<Integer, Cluster> getClusters() {
+        clusters = new HashMap<>();
+        for (Grid center : centers) {
+            Cluster cluster = new Cluster(center.getLabel(), center);
+            clusters.put(center.getLabel(), cluster);
+        }
+        for (Grid grid : grids) {
+            if (!centers.contains(grid)) {
+                Cluster cluster = clusters.get(grid.getLabel());
+                cluster.addGrid(grid);
+            }
+        }
+        return clusters;
+    }
 }
