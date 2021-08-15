@@ -1,4 +1,4 @@
-package GDMC.utl;
+package GDMC.util;
 
 /**
  * Created by jxm on 2021/8/1.
@@ -11,4 +11,5 @@ public class Functions {
         }
         return Math.sqrt(distance);
     }
+
 }

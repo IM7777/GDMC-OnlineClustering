@@ -15,12 +15,21 @@ public class EvolutionRecognizer {
     private ArrayList<Cluster> currentClusters;
     private ArrayList<Cluster> deadList = new ArrayList<>();
     private ArrayList<Cluster> survivalList = new ArrayList<>();
+    private HashMap<Cluster, Integer> sizeTransitionList = new HashMap<>();
+    private HashMap<Cluster, Integer> compactTransitionList = new HashMap<>();
+
 
     private Map<Cluster, ArrayList<Cluster>> splitList = new HashMap<>();
     private Map<Cluster, ArrayList<Cluster>> absorpList = new HashMap<>();
 
+    // match
     private double tau = 0.5;
     private double tauSplit = 0.2;
+    // size
+    private double varepsilon = 50;
+    // compact
+    private double delta = 0.5;
+
 
     public EvolutionRecognizer(ArrayList<Cluster> latestClusters, ArrayList<Cluster> currentClusters) {
         this.latestClusters = latestClusters;
@@ -95,6 +104,32 @@ public class EvolutionRecognizer {
             }
         }
     }
+
+    public void sizeTransition(Cluster x, Cluster y) {
+        double density_x = x.getDensity();
+        double density_y = y.getDensity();
+        double deltaDensity = Math.abs(density_x - density_y);
+        if (deltaDensity >= varepsilon) {
+            if (density_x - density_y > 0)
+                sizeTransitionList.put(x, -1);
+            else
+                sizeTransitionList.put(x, 1);
+        }
+    }
+
+    public void compactTransition(Cluster x, Cluster y) {
+        double standardDeviation_x = x.getStandardDeviation();
+        double standardDeviation_y = y.getStandardDeviation();
+        double deltaStandardDeviation = Math.abs(standardDeviation_x - standardDeviation_y);
+        if (deltaStandardDeviation >= delta) {
+            if (standardDeviation_x - standardDeviation_y > 0)
+                compactTransitionList.put(x, 1);
+            else
+                compactTransitionList.put(x, -1);
+        }
+    }
+
+    
 
 
 }

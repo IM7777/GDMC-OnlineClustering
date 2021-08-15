@@ -109,6 +109,14 @@ public class Grid {
         return Math.sqrt(distance);
     }
 
+    public double calDoubleDistance(Grid grid) {
+        double doubleDistance = 0.0;
+        for (int i = 0; i < dim; i++) {
+            doubleDistance += Math.pow(this.centroid.getAttr()[i] - grid.centroid.getAttr()[i], 2);
+        }
+        return doubleDistance;
+    }
+
     public void setCentroid(Point centroid) {
         this.centroid = centroid;
     }

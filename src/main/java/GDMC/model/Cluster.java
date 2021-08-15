@@ -57,6 +57,23 @@ public class Cluster {
         return false;
     }
 
+    public double getDensity() {
+        double density = 0.0;
+        for (Grid grid : grids) {
+            density += grid.getDensity();
+        }
+        return density;
+    }
+
+    public double getStandardDeviation() {
+        double density = getDensity();
+        double sum = 0.0;
+        for (Grid grid : grids) {
+            sum += grid.calDoubleDistance(center);
+        }
+        return Math.sqrt(sum * 1.0 / density);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
