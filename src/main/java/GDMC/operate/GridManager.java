@@ -9,7 +9,10 @@ import java.util.ArrayList;
  * Created by jxm on 2021/7/21.
  */
 public class GridManager {
+    // 网格列表
     private ArrayList<Grid> grids;
+
+    // 衰减函数
     private double lambda;
     private double len;
 

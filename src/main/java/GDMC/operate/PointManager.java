@@ -25,7 +25,7 @@ public class PointManager {
                 String[] seg = line.split(",");
                 double[] attr = new double[2];
                 for (int i = 0; i < attr.length; i++) {
-                    attr[i] = Double.parseDouble(seg[i]);
+                    attr[i] = Double.parseDouble(seg[i+1]);
                 }
                 points.add(new Point(attr, id));
                 id++;
@@ -52,7 +52,7 @@ public class PointManager {
 
     public static void main(String[] args) throws IOException {
         //格式：x, y, label
-        String filePath = "/Users/jxm/NutstoreCloudBridge/我的坚果云/2 数据集/aggregation/aggregationNormal.txt";
+        String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
         PointManager pointProcess = new PointManager();
         pointProcess.readPoints(filePath);
         pointProcess.pointsInfo();
