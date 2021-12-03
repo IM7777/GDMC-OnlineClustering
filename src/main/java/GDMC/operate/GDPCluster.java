@@ -3,6 +3,7 @@ package GDMC.operate;
 import GDMC.model.Cluster;
 import GDMC.model.Grid;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,12 +12,14 @@ import java.util.Map;
 /**
  * Created by jxm on 2021/7/17.
  */
-public class GDPCluster {
+public class GDPCluster implements Serializable {
     private ArrayList<Grid> grids;
     private double rhoThreshold;
     private double deltaThreshold;
+    //对应的下标就是中心的聚类标签
     private ArrayList<Grid> centers;
-    private Map<Integer, Cluster> clusters;
+    private HashMap<Integer, Cluster> clusters;
+
 
     public GDPCluster(ArrayList<Grid> grids, double rhoThreshold, double deltaThreshold) {
         this.grids = grids;
@@ -25,7 +28,7 @@ public class GDPCluster {
         this.centers = new ArrayList<>();
     }
 
-    public void calDelta(){
+    public void calDelta() {
         grids.sort(new Comparator<Grid>() {
             @Override
             public int compare(Grid o1, Grid o2) {
@@ -34,7 +37,7 @@ public class GDPCluster {
         });
         double maxDistance = Double.MIN_VALUE;
         Grid peakGrid = grids.get(0);
-        for (int i = 1; i < grids.size();i++) {
+        for (int i = 1; i < grids.size(); i++) {
             Grid curGrid = grids.get(i);
             double minDistance = curGrid.calDistance(peakGrid);
             Grid nearestNeighbor = peakGrid;
@@ -58,7 +61,7 @@ public class GDPCluster {
 
     public void findCenters() {
         int lable = 0;
-        for (int i = 0; i<grids.size();i++) {
+        for (int i = 0; i < grids.size(); i++) {
             Grid curGrid = grids.get(i);
             if (curGrid.getDensity() >= rhoThreshold) {
                 if (curGrid.getDelta() >= deltaThreshold) {
@@ -66,8 +69,7 @@ public class GDPCluster {
                     curGrid.setLabel(lable);
                     lable++;
                 }
-            }
-            else
+            } else
                 break;
         }
     }
@@ -77,23 +79,25 @@ public class GDPCluster {
             Grid curGrid = grids.get(i);
             if (!centers.contains(curGrid)) {
                 Grid nearestNeighbor = curGrid.getNearestNeighbor();
-                curGrid.setLabel(nearestNeighbor.getLabel());
+                int curLabel = nearestNeighbor.getLabel();
+                curGrid.setLabel(curLabel);
+                curGrid.setCenterDistance(curGrid.calDistance(centers.get(curLabel)));
             }
         }
     }
 
     public void info() {
         System.out.println("聚类中心");
-        for(int i=0;i<centers.size();i++) {
+        for (int i = 0; i < centers.size(); i++) {
             System.out.println(centers.get(i));
         }
         System.out.println("聚类结果");
-        for (int i = 0; i< grids.size();i++) {
+        for (int i = 0; i < grids.size(); i++) {
             System.out.println(grids.get(i));
         }
     }
 
-    public Map<Integer, Cluster> getClusters() {
+    public HashMap<Integer, Cluster> getClusters() {
         clusters = new HashMap<>();
         for (Grid center : centers) {
             Cluster cluster = new Cluster(center.getLabel(), center);
@@ -106,5 +110,9 @@ public class GDPCluster {
             }
         }
         return clusters;
+    }
+
+    public ArrayList<Grid> getCenters() {
+        return centers;
     }
 }

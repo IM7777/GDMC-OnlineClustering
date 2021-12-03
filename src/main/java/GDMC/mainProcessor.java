@@ -1,21 +1,23 @@
 package GDMC;
 
+import GDMC.model.Cluster;
 import GDMC.model.Grid;
 import GDMC.model.Point;
-import GDMC.operate.GDPCluster;
-import GDMC.operate.GridManager;
-import GDMC.operate.PointManager;
-import GDMC.operate.ResultViewer;
+import GDMC.operate.*;
+import org.jfree.chart.util.CloneUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import static GDMC.util.Functions.deepCloneObject;
 
 /**
  * Created by jxm on 2021/7/21.
  */
 public class mainProcessor {
-    public static String filePath = "/Users/jxm/NutstoreCloudBridge/我的坚果云/2 数据集/aggregation/aggregationNormal.txt";
-    public static int initNum = 788;
+    public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
+    public static int initNum = 1000;
 
 
     public static void main(String[] args) throws IOException {
@@ -27,7 +29,10 @@ public class mainProcessor {
         points = pm.getPoints();
 
         int t = 0;
-        GridManager gm = new GridManager(1.0, 0.08);
+        // 网格管理模块，设置
+        GridManager gm = new GridManager(1.0, 0.1);
+
+        // 初始聚类
         while (t < initNum) {
             Point curPoint = points.get(t);
             gm.mapToGrid(curPoint);
@@ -35,13 +40,32 @@ public class mainProcessor {
         }
         grids = gm.getGrids();
 
-        GDPCluster gdpCluster = new GDPCluster(grids, 11.0, 0.26);
-        gdpCluster.calDelta();
-        gdpCluster.findCenters();
-        gdpCluster.assignLabel();
-        gdpCluster.info();
+        GDPCluster currentGDPC = new GDPCluster(grids, 13, 1.0);
+        currentGDPC.calDelta();
+        currentGDPC.findCenters();
+        currentGDPC.assignLabel();
+        currentGDPC.info();
+        ArrayList<Grid> currentCenters = currentGDPC.getCenters();
+        HashMap<Integer, Cluster> currentClusters = currentGDPC.getClusters();
+        EvolutionDetector ed = new EvolutionDetector(currentGDPC.getCenters(), 0.5, 2);
 
-        ResultViewer rv = new ResultViewer(gdpCluster.getClusters());
+        while (t < points.size()) {
+            // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
+            for(int i=0; i<initNum && t<points.size(); i++){
+                Point curPoint = points.get(t);
+                t++;
+                gm.mapToGrid(curPoint, currentGDPC.getCenters());
+            }
+            // 均值漂移检测
+
+
+
+
+
+        }
+
+        GDPCluster latestGDPC = deepCloneObject(currentGDPC);
+        ResultViewer rv = new ResultViewer(currentGDPC.getClusters());
         rv.showChart();
 
 

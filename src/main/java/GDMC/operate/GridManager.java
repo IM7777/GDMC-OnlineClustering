@@ -14,6 +14,8 @@ public class GridManager {
 
     // 衰减函数
     private double lambda;
+
+    // 网格单位长度
     private double len;
 
     public GridManager(double lambda, double len) {
@@ -30,6 +32,32 @@ public class GridManager {
         if (index == -1) {
             grids.add(grid);
         } else{
+            grids.get(index).updateGrid(point);
+        }
+    }
+
+    public void mapToGrid(Point point, ArrayList<Grid> centers) {
+        int[] vector = new int[2];
+        vector = point.mapToGrid(len);
+        Grid grid = new Grid(lambda, point, vector);
+        int index = grids.indexOf(grid);
+        // 如果是新增网格，计算距离最近的聚类中心，并将其分配给它
+        if (index == -1) {
+            double minDistance = Double.MAX_VALUE;
+            Grid nearestCenter = null;
+            for (Grid center : centers) {
+                double curDistance = grid.calDistance(center);
+                if (curDistance < minDistance) {
+                    nearestCenter = center;
+                    minDistance = curDistance;
+                }
+            }
+            if (nearestCenter != null) {
+                grid.setCenterDistance(minDistance);
+                grid.setLabel(nearestCenter.getLabel());
+            }
+            grids.add(grid);
+        } else {
             grids.get(index).updateGrid(point);
         }
     }

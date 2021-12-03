@@ -74,6 +74,8 @@ public class Cluster {
         return Math.sqrt(sum * 1.0 / density);
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

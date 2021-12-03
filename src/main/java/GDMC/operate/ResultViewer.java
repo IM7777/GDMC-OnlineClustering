@@ -42,7 +42,8 @@ public class ResultViewer {
             }
             xyDataset.addSeries(label, data);
         }
-        JFreeChart chart = ChartFactory.createScatterPlot("result", "x", "y", xyDataset, PlotOrientation.VERTICAL, true, false, false);
+        JFreeChart chart = ChartFactory.createScatterPlot("result", "x", "y",
+                xyDataset, PlotOrientation.VERTICAL, true, false, false);
         ChartFrame frame = new ChartFrame("pic", chart, true);
         chart.setBackgroundPaint(Color.white);
         chart.setBorderPaint(Color.GREEN);
@@ -51,7 +52,11 @@ public class ResultViewer {
 
         xyplot.setBackgroundPaint(new Color(255, 253, 246));
         ValueAxis vaaxis = xyplot.getDomainAxis();
+        vaaxis.setRange(0,10);
         vaaxis.setAxisLineStroke(new BasicStroke(1.5f));
+
+        ValueAxis yAxis = xyplot.getRangeAxis();
+        yAxis.setRange(0,10);
 
         ValueAxis va = xyplot.getDomainAxis(0);
         va.setAxisLineStroke(new BasicStroke(1.5f));

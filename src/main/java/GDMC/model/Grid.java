@@ -13,6 +13,7 @@ public class Grid {
     private int dim;
     private double lambda;
     private double delta;
+    private double centerDistance;
     private Grid nearestNeighbor;
     private int label;
 
@@ -25,6 +26,7 @@ public class Grid {
         this.vector = new int[dim];
         this.vector = vector;
         this.delta = Double.MAX_VALUE;
+        this.centerDistance = Double.MAX_VALUE;
         this.label = -1;
 
     }
@@ -44,6 +46,14 @@ public class Grid {
             this.centroid.getAttr()[i] = (this.centroid.getAttr()[i] * updateDensity + point.getAttr()[i]) / (updateDensity + 1);
         }
         this.density = updateDensity + 1;
+    }
+
+    public double getCenterDistance() {
+        return centerDistance;
+    }
+
+    public void setCenterDistance(double centerDistance) {
+        this.centerDistance = centerDistance;
     }
 
     public Point getCentroid() {
