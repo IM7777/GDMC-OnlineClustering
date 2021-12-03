@@ -14,12 +14,9 @@ import static GDMC.util.Functions.deepCloneObject;
  */
 public class EvolutionDetector {
     private int dim;
-    private ArrayList<Grid> centers;
     private double shiftThreshold;//判定是否发生漂移的阈值
     private int kenalBandwidth;
     private HashMap<Integer, double[]> latestShiftAttrs = new HashMap<>();
-    private HashMap<Integer, double[]> currentShiftAttrs = new HashMap<>();
-    private Map<Integer, Boolean> result;
 
     public EvolutionDetector(int dim, double shiftThreshold, int kenalBandwidth) {
         this.dim = dim;
@@ -27,22 +24,34 @@ public class EvolutionDetector {
         this.kenalBandwidth = kenalBandwidth;
     }
 
-    public void calCurrentShiftAttrs(HashMap<Integer, Cluster> clusters) {
-        if (!currentShiftAttrs.isEmpty()) {
-            latestShiftAttrs = deepCloneObject(currentShiftAttrs);
-        }
-        currentShiftAttrs = new HashMap<>();
+    private HashMap<Integer, double[]> calShiftAttrs(HashMap<Integer, Cluster> clusters) {
+        HashMap<Integer, double[]> shiftAttrs = new HashMap<>();
         for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
             double[] shiftAttr = getMeanShift(entry.getValue());
-            currentShiftAttrs.put(entry.getKey(), shiftAttr);
+            shiftAttrs.put(entry.getKey(), shiftAttr);
         }
+        return shiftAttrs;
     }
 
-    public EvolutionDetector(ArrayList<Grid> centers, double shiftThreshold, int kenalBandwidth) {
-        this.centers = centers;
-        this.shiftThreshold = shiftThreshold;
-        this.kenalBandwidth = kenalBandwidth;
+    public boolean isShift(HashMap<Integer, Cluster> clusters) {
+        if (latestShiftAttrs.isEmpty()) {
+            latestShiftAttrs = calShiftAttrs(clusters);
+            return true;
+        } else {
+            HashMap<Integer, double[]> currentShiftAttrs = calShiftAttrs(clusters);
+            for (Integer label : latestShiftAttrs.keySet()) {
+                double[] latestShiftAttr = latestShiftAttrs.get(label);
+                double[] currentShiftAttr = currentShiftAttrs.get(label);
+                double shiftDistance = EuclideanDistance(latestShiftAttr, currentShiftAttr);
+                if (shiftDistance > shiftThreshold) {
+                    latestShiftAttrs.clear();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+
 
 /*
     private ArrayList<Double> calGussianKernel(ArrayList<Double> distances) {
@@ -70,8 +79,7 @@ public class EvolutionDetector {
         return gussainValues;
     }
 
-    // Double[] = {density, distance}
-    public double[] getMeanShift(Cluster cluster) {
+    private double[] getMeanShift(Cluster cluster) {
         ArrayList<Double> gussainValues = new ArrayList<>();
         gussainValues = calGussianKernel(cluster);
         //求分母 高斯值*密度值的累加和
@@ -124,30 +132,5 @@ public class EvolutionDetector {
         return shiftAttr;
     }
  */
-/*
-    public Map<Integer, double[]> getShiftAttrs(ArrayList<Grid> grids) {
-        Map<Integer, double[]> shiftDistances = new HashMap<>();
-        for (Grid center : centers) {
-            double[] shifAttr = getMeanShift(center, grids);
-            shiftDistances.put(center.getLabel(), shifAttr);
-        }
-        return shiftDistances;
-    }
- */
 
-    public Map<Integer, Boolean> process(Map<Integer, double[]> latestShiftAttrs, Map<Integer, double[]> currentShiftAttrs) {
-        result = new HashMap<>();
-        for (Grid center : centers) {
-            int key = center.getLabel();
-            double[] latestShiftDistance = latestShiftAttrs.get(key);
-            double[] currentShiftDistace = currentShiftAttrs.get(key);
-            double shiftDistance = EuclideanDistance(latestShiftDistance, currentShiftDistace);
-            if (shiftDistance > shiftThreshold) {
-                result.put(key, Boolean.TRUE);
-            } else {
-                result.put(key, Boolean.FALSE);
-            }
-        }
-        return result;
-    }
 }
