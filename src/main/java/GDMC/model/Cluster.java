@@ -1,12 +1,14 @@
 package GDMC.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
 
 /**
  * Created by jxm on 2021/7/22.
  */
-public class Cluster {
+public class Cluster implements Serializable {
+    private static final long serialVersionUID = 2790685155784010239L;
     private int label;
     private ArrayList<Grid> grids;
     private Grid center;

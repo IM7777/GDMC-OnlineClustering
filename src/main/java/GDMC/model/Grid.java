@@ -1,11 +1,13 @@
 package GDMC.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * Created by jxm on 2021/7/17.
  */
-public class Grid {
+public class Grid implements Serializable {
+    private static final long serialVersionUID = 4939831091940554949L;
     private Point centroid;
     private int[] vector;
     private double density;

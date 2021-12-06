@@ -5,12 +5,12 @@ import GDMC.model.Grid;
 import GDMC.model.Point;
 import GDMC.operate.*;
 import org.jfree.chart.util.CloneUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static GDMC.util.Functions.deepCloneObject;
 
 /**
  * Created by jxm on 2021/7/21.
@@ -43,14 +43,15 @@ public class mainProcessor {
         GDPCluster currentGDPC = new GDPCluster(grids, 2.5);
         currentGDPC.process(t);
         currentGDPC.info();
+        HashMap<Integer, Cluster> currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
 
         //聚类结果显示模块
         ResultViewer rv = new ResultViewer();
-        rv.showChart(currentGDPC.getClusters());
+        rv.showChart(currentClusters);
 
         EvolutionDetector ed = new EvolutionDetector(2, 0.4, 2);
         System.out.println("计算第一次中心点漂移值");
-        ed.isShift(currentGDPC.getClusters());
+        ed.isShift(currentClusters);
 
         while (t < points.size()) {
             // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
@@ -64,7 +65,9 @@ public class mainProcessor {
                 System.out.println("t=" + t + "，发生漂移啦啊！");
                 currentGDPC.process(t);
                 currentGDPC.info();
-                rv.showChart(currentGDPC.getClusters());
+                HashMap<Integer, Cluster> latestCluster = SerializationUtils.clone(currentClusters);
+                currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
+                rv.showChart(currentClusters);
             }
         }
 
