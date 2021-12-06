@@ -14,25 +14,45 @@ import java.util.Map;
  */
 public class GDPCluster implements Serializable {
     private ArrayList<Grid> grids;
-    private double rhoThreshold;
     private double deltaThreshold;
     //对应的下标就是中心的聚类标签
     private ArrayList<Grid> centers;
-    private HashMap<Integer, Cluster> clusters;
+    private double Dh;
+    private double Dl;
 
 
-    public GDPCluster(ArrayList<Grid> grids, double rhoThreshold, double deltaThreshold) {
+    public GDPCluster(ArrayList<Grid> grids, double deltaThreshold) {
         this.grids = grids;
-        this.rhoThreshold = rhoThreshold;
         this.deltaThreshold = deltaThreshold;
-        this.centers = new ArrayList<>();
     }
 
-    public void calDelta() {
+    private void updateGridsDensity(long time) {
+        double totalDensity = 0.0;
+        for (Grid grid : grids) {
+            totalDensity += grid.getUpdateDensity(time);
+        }
+        double averageDensity = totalDensity / grids.size();
+        int denseNum=0, sparseNum = 0;
+        double totalDense = 0.0, totalSparse = 0.0;
+        for (Grid grid : grids) {
+            double curDensity = grid.getDensity();
+            if (curDensity >= averageDensity) {
+                totalDense += curDensity;
+                denseNum++;
+            } else {
+                totalSparse += curDensity;
+                sparseNum++;
+            }
+        }
+        Dh = totalDense / denseNum;
+        Dl = totalSparse / sparseNum;
+    }
+
+    private void calDelta() {
         grids.sort(new Comparator<Grid>() {
             @Override
             public int compare(Grid o1, Grid o2) {
-                return (int) (o2.getDensity() - o1.getDensity());
+                return Double.compare(o2.getDensity(), o1.getDensity());
             }
         });
         double maxDistance = Double.MIN_VALUE;
@@ -59,11 +79,11 @@ public class GDPCluster implements Serializable {
         peakGrid.setDelta(maxDistance);
     }
 
-    public void findCenters() {
+    private void findCenters() {
+        this.centers = new ArrayList<>();
         int lable = 0;
-        for (int i = 0; i < grids.size(); i++) {
-            Grid curGrid = grids.get(i);
-            if (curGrid.getDensity() >= rhoThreshold) {
+        for (Grid curGrid : grids) {
+            if (curGrid.getDensity() >= Dh) {
                 if (curGrid.getDelta() >= deltaThreshold) {
                     centers.add(curGrid);
                     curGrid.setLabel(lable);
@@ -74,9 +94,8 @@ public class GDPCluster implements Serializable {
         }
     }
 
-    public void assignLabel() {
-        for (int i = 0; i < grids.size(); i++) {
-            Grid curGrid = grids.get(i);
+    private void assignLabel() {
+        for (Grid curGrid : grids) {
             if (!centers.contains(curGrid)) {
                 Grid nearestNeighbor = curGrid.getNearestNeighbor();
                 int curLabel = nearestNeighbor.getLabel();
@@ -88,17 +107,17 @@ public class GDPCluster implements Serializable {
 
     public void info() {
         System.out.println("聚类中心");
-        for (int i = 0; i < centers.size(); i++) {
-            System.out.println(centers.get(i));
+        for (Grid center : centers) {
+            System.out.println(center);
         }
         System.out.println("聚类结果");
-        for (int i = 0; i < grids.size(); i++) {
-            System.out.println(grids.get(i));
+        for (Grid grid : grids) {
+            System.out.println(grid);
         }
     }
 
     public HashMap<Integer, Cluster> getClusters() {
-        clusters = new HashMap<>();
+        HashMap<Integer, Cluster> clusters = new HashMap<>();
         for (Grid center : centers) {
             Cluster cluster = new Cluster(center.getLabel(), center);
             clusters.put(center.getLabel(), cluster);
@@ -114,5 +133,12 @@ public class GDPCluster implements Serializable {
 
     public ArrayList<Grid> getCenters() {
         return centers;
+    }
+
+    public void process(long time) {
+        updateGridsDensity(time);
+        calDelta();
+        findCenters();
+        assignLabel();
     }
 }

@@ -30,7 +30,7 @@ public class mainProcessor {
 
         int t = 0;
         // 网格管理模块，设置
-        GridManager gm = new GridManager(1.0, 0.1);
+        GridManager gm = new GridManager(0.997, 0.1);
 
         // 初始聚类
         while (t < initNum) {
@@ -40,35 +40,33 @@ public class mainProcessor {
         }
         grids = gm.getGrids();
 
-        GDPCluster currentGDPC = new GDPCluster(grids, 13, 1.0);
-        currentGDPC.calDelta();
-        currentGDPC.findCenters();
-        currentGDPC.assignLabel();
+        GDPCluster currentGDPC = new GDPCluster(grids, 2.5);
+        currentGDPC.process(t);
         currentGDPC.info();
-        ArrayList<Grid> currentCenters = currentGDPC.getCenters();
-        HashMap<Integer, Cluster> currentClusters = currentGDPC.getClusters();
-        EvolutionDetector ed = new EvolutionDetector(currentGDPC.getCenters(), 0.5, 2);
+
+        //聚类结果显示模块
+        ResultViewer rv = new ResultViewer();
+        rv.showChart(currentGDPC.getClusters());
+
+        EvolutionDetector ed = new EvolutionDetector(2, 0.4, 2);
+        System.out.println("计算第一次中心点漂移值");
+        ed.isShift(currentGDPC.getClusters());
 
         while (t < points.size()) {
             // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
             for(int i=0; i<initNum && t<points.size(); i++){
-                Point curPoint = points.get(t);
+                Point curPoint = points.get((int) t);
                 t++;
                 gm.mapToGrid(curPoint, currentGDPC.getCenters());
             }
             // 均值漂移检测
-
-
-
-
-
+            if (ed.isShift(currentGDPC.getClusters())) {
+                System.out.println("t=" + t + "，发生漂移啦啊！");
+                currentGDPC.process(t);
+                currentGDPC.info();
+                rv.showChart(currentGDPC.getClusters());
+            }
         }
-
-        GDPCluster latestGDPC = deepCloneObject(currentGDPC);
-        ResultViewer rv = new ResultViewer(currentGDPC.getClusters());
-        rv.showChart();
-
-
 
     }
 }

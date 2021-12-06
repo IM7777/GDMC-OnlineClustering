@@ -21,13 +21,7 @@ import java.util.Map;
  */
 public class ResultViewer {
 
-    private Map<Integer, Cluster> clusters;
-
-    public ResultViewer(Map<Integer, Cluster> clusters) {
-        this.clusters = clusters;
-    }
-
-    public void showChart() {
+    public void showChart(Map<Integer, Cluster> clusters) {
         DefaultXYDataset xyDataset = new DefaultXYDataset();
 
         for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {

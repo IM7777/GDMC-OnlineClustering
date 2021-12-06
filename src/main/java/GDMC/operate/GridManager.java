@@ -1,9 +1,11 @@
 package GDMC.operate;
 
+import GDMC.model.Cluster;
 import GDMC.model.Grid;
 import GDMC.model.Point;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by jxm on 2021/7/21.
