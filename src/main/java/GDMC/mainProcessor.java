@@ -24,30 +24,30 @@ public class mainProcessor {
         ArrayList<Point> points = new ArrayList<>();
         ArrayList<Grid> grids = new ArrayList<>();
 
-        PointManager pm = new PointManager();
-        pm.readPoints(filePath);
-        points = pm.getPoints();
+        PointManager pointManager = new PointManager();
+        pointManager.readPoints(filePath);
+        points = pointManager.getPoints();
 
         int t = 0;
         // 网格管理模块，设置
-        GridManager gm = new GridManager(0.997, 0.1);
+        GridManager gridManager = new GridManager(0.997, 0.1);
 
         // 初始聚类
         while (t < initNum) {
             Point curPoint = points.get(t);
-            gm.mapToGrid(curPoint);
+            gridManager.mapToGrid(curPoint);
             t++;
         }
-        grids = gm.getGrids();
+        grids = gridManager.getGrids();
 
         GDPCluster currentGDPC = new GDPCluster(grids, 2.5);
         currentGDPC.process(t);
-        currentGDPC.info();
+        //currentGDPC.info();
         HashMap<Integer, Cluster> currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
 
         //聚类结果显示模块
-        ResultViewer rv = new ResultViewer();
-        rv.showChart(currentClusters);
+        ResultViewer resultViewer = new ResultViewer();
+        resultViewer.showChart(currentClusters);
 
         EvolutionDetector ed = new EvolutionDetector(2, 0.4, 2);
         System.out.println("计算第一次中心点漂移值");
@@ -58,16 +58,18 @@ public class mainProcessor {
             for(int i=0; i<initNum && t<points.size(); i++){
                 Point curPoint = points.get((int) t);
                 t++;
-                gm.mapToGrid(curPoint, currentGDPC.getCenters());
+                gridManager.mapToGrid(curPoint, currentGDPC.getCenters());
             }
             // 均值漂移检测
             if (ed.isShift(currentGDPC.getClusters())) {
                 System.out.println("t=" + t + "，发生漂移啦啊！");
                 currentGDPC.process(t);
-                currentGDPC.info();
-                HashMap<Integer, Cluster> latestCluster = SerializationUtils.clone(currentClusters);
+                //currentGDPC.info();
+                HashMap<Integer, Cluster> latestClusters = SerializationUtils.clone(currentClusters);
                 currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
-                rv.showChart(currentClusters);
+                resultViewer.showChart(currentClusters);
+                EvolutionRecognizer evolutionRecognizer = new EvolutionRecognizer(latestClusters, currentClusters);
+                evolutionRecognizer.process();
             }
         }
 
