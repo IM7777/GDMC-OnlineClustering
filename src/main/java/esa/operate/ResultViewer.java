@@ -1,7 +1,7 @@
-package GDMC.operate;
+package esa.operate;
 
-import GDMC.model.Cluster;
-import GDMC.model.Grid;
+import esa.model.ESACluster;
+import esa.model.ESAGrid;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -13,7 +13,6 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -21,16 +20,16 @@ import java.util.Map;
  */
 public class ResultViewer {
 
-    public void showChart(Map<Integer, Cluster> clusters) {
+    public void showChart(Map<Integer, ESACluster> clusters) {
         DefaultXYDataset xyDataset = new DefaultXYDataset();
 
-        for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
+        for (Map.Entry<Integer, ESACluster> entry : clusters.entrySet()) {
             int label = entry.getKey();
-            Cluster cluster = entry.getValue();
+            ESACluster cluster = entry.getValue();
             int size = entry.getValue().getGrids().size();
             double[][] data = new double[2][size];
             for (int i = 0; i < size; i++) {
-                Grid grid = cluster.getGrids().get(i);
+                ESAGrid grid = cluster.getGrids().get(i);
                 data[0][i] = grid.getCentroid().getAttr()[0];
                 data[1][i] = grid.getCentroid().getAttr()[1];
             }
@@ -46,11 +45,11 @@ public class ResultViewer {
 
         xyplot.setBackgroundPaint(new Color(255, 253, 246));
         ValueAxis vaaxis = xyplot.getDomainAxis();
-        vaaxis.setRange(0,10);
+        vaaxis.setRange(0,1);
         vaaxis.setAxisLineStroke(new BasicStroke(1.5f));
 
         ValueAxis yAxis = xyplot.getRangeAxis();
-        yAxis.setRange(0,10);
+        yAxis.setRange(0,1);
 
         ValueAxis va = xyplot.getDomainAxis(0);
         va.setAxisLineStroke(new BasicStroke(1.5f));

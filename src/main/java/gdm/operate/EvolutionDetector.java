@@ -1,12 +1,12 @@
-package GDMC.operate;
-import GDMC.model.Cluster;
-import GDMC.model.Grid;
+package gdm.operate;
+import gdm.model.GDMCluster;
+import gdm.model.GDMGrid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static GDMC.util.Functions.EuclideanDistance;
+import static common.util.Functions.EuclideanDistance;
 
 /**
  * Created by jxm on 2021/7/23.
@@ -23,29 +23,28 @@ public class EvolutionDetector {
         this.kenalBandwidth = kenalBandwidth;
     }
 
-    private HashMap<Integer, double[]> calShiftAttrs(HashMap<Integer, Cluster> clusters) {
+    private HashMap<Integer, double[]> calShiftAttrs(HashMap<Integer, GDMCluster> clusters) {
         HashMap<Integer, double[]> shiftAttrs = new HashMap<>();
-        for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
+        for (Map.Entry<Integer, GDMCluster> entry : clusters.entrySet()) {
             double[] shiftAttr = getMeanShift(entry.getValue());
             shiftAttrs.put(entry.getKey(), shiftAttr);
         }
         return shiftAttrs;
     }
 
-    public boolean isShift(HashMap<Integer, Cluster> clusters) {
-        if (latestShiftAttrs.isEmpty()) {
-            latestShiftAttrs = calShiftAttrs(clusters);
-            return true;
-        } else {
-            HashMap<Integer, double[]> currentShiftAttrs = calShiftAttrs(clusters);
-            for (Integer label : latestShiftAttrs.keySet()) {
-                double[] latestShiftAttr = latestShiftAttrs.get(label);
-                double[] currentShiftAttr = currentShiftAttrs.get(label);
-                double shiftDistance = EuclideanDistance(latestShiftAttr, currentShiftAttr);
-                if (shiftDistance > shiftThreshold) {
-                    latestShiftAttrs.clear();
-                    return true;
-                }
+    public void setLatestShiftAttrs(HashMap<Integer, GDMCluster> clusters) {
+        latestShiftAttrs = calShiftAttrs(clusters);
+    }
+
+    public boolean isShift(HashMap<Integer, GDMCluster> clusters, double avg) {
+        HashMap<Integer, double[]> currentShiftAttrs = calShiftAttrs(clusters);
+        for (Integer label : latestShiftAttrs.keySet()) {
+            double[] latestShiftAttr = latestShiftAttrs.get(label);
+            double[] currentShiftAttr = currentShiftAttrs.get(label);
+            double shiftDistance = EuclideanDistance(latestShiftAttr, currentShiftAttr);
+            if (shiftDistance > shiftThreshold || clusters.get(label).getCenter().getDensity() < avg) {
+                latestShiftAttrs.clear();
+                return true;
             }
         }
         return false;
@@ -66,11 +65,11 @@ public class EvolutionDetector {
 
 */
 
-    private ArrayList<Double> calGussianKernel(Cluster cluster) {
+    private ArrayList<Double> calGussianKernel(GDMCluster cluster) {
         ArrayList<Double> gussainValues = new ArrayList<>();
         double left = 1 / (kenalBandwidth * Math.sqrt(2 * Math.PI));
         for (int i = 0; i < cluster.getGrids().size(); i++) {
-            Grid curGrid = cluster.getGrids().get(i);
+            GDMGrid curGrid = cluster.getGrids().get(i);
             double right = (-0.5 * Math.pow(curGrid.getCenterDistance(), 2)) / (Math.pow(kenalBandwidth, 2));
             right = Math.exp(right);
             gussainValues.add(left * right);
@@ -78,7 +77,7 @@ public class EvolutionDetector {
         return gussainValues;
     }
 
-    private double[] getMeanShift(Cluster cluster) {
+    private double[] getMeanShift(GDMCluster cluster) {
         ArrayList<Double> gussainValues = new ArrayList<>();
         gussainValues = calGussianKernel(cluster);
         //求分母 高斯值*密度值的累加和
@@ -91,7 +90,7 @@ public class EvolutionDetector {
         for (int i = 0; i< shiftAttr.length; i++) {
             shiftAttr[i] = 0.0;
             int index = 0;
-            for (Grid grid : cluster.getGrids()) {
+            for (GDMGrid grid : cluster.getGrids()) {
                 shiftAttr[i] += gussainValues.get(index) * grid.getDensity() * grid.getCentroid().getAttr()[i];
                 index++;
             }

@@ -1,4 +1,4 @@
-package GDMC.model;
+package common.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -8,7 +8,7 @@ import java.util.Arrays;
  */
 public class Point implements Serializable {
 
-    private static final long serialVersionUID = 8459785729573034889L;
+    private static final long serialVersionUID = 8588843159689457355L;
     private double[] attr;
     private int id;
     private int dim;
@@ -22,9 +22,11 @@ public class Point implements Serializable {
     public int[] mapToGrid(double len) {
         int[] vec = new int[dim];
         for (int i=0;i<vec.length;i++) {
-            if (attr[i] == 1.0) {
-                attr[i] = 0.999999;
+            if (attr[i] == 10.0) {
+                attr[i] = 9.999999;
             }
+            if (attr[i] == 1.0)
+                attr[i] = 0.999999;
             vec[i] = (int) Math.floor(attr[i] * 1.0 / len);
         }
         return vec;

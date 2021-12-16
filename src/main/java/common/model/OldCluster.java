@@ -1,38 +1,38 @@
-package GDMC.model;
+package common.model;
+
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * Created by jxm on 2021/7/22.
- */
-public class Cluster implements Serializable {
-    private static final long serialVersionUID = 2790685155784010239L;
+public class OldCluster implements Serializable {
+
+    private static final long serialVersionUID = -2143986170675141982L;
     private int label;
     private ArrayList<Grid> grids;
     private Grid center;
 
-    public Cluster(int label, Grid center) {
+    public OldCluster(int label, Grid center) {
         this.label = label;
         this.center = center;
         grids = new ArrayList<>();
         grids.add(center);
     }
 
-    public Cluster() {
+    public OldCluster() {
         this.label = -1;
         grids = new ArrayList<>();
     }
 
-    public void copy(Cluster cluster) {
+    public void copy(OldCluster cluster) {
         this.label = cluster.getLabel();
         this.grids = cluster.getGrids();
         this.center = cluster.getCenter();
 
     }
 
-    public void merge(Cluster cluster) {
+    public void merge(OldCluster cluster) {
         this.grids.addAll(cluster.getGrids());
     }
 
@@ -81,9 +81,9 @@ public class Cluster implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cluster)) return false;
+        if (!(o instanceof OldCluster)) return false;
 
-        Cluster cluster = (Cluster) o;
+        OldCluster cluster = (OldCluster) o;
 
         return grids.equals(cluster.grids);
     }
@@ -93,3 +93,4 @@ public class Cluster implements Serializable {
         return grids.hashCode();
     }
 }
+*/

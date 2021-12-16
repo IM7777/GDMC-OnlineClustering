@@ -1,28 +1,29 @@
-package GDMC;
+package gdm;
 
-import GDMC.model.Cluster;
-import GDMC.model.Grid;
-import GDMC.model.Point;
-import GDMC.operate.*;
-import org.jfree.chart.util.CloneUtils;
+import gdm.model.GDMCluster;
+import gdm.model.GDMGrid;
+//import gdm.model.Grid;
+import common.model.Point;
+import common.operate.PointManager;
+import gdm.operate.ResultViewer;
+import gdm.operate.*;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by jxm on 2021/7/21.
  */
-public class mainProcessor {
+public class GDMClustering {
     public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
     public static int initNum = 1000;
 
 
     public static void main(String[] args) throws IOException {
         ArrayList<Point> points = new ArrayList<>();
-        ArrayList<Grid> grids = new ArrayList<>();
+        ArrayList<GDMGrid> grids = new ArrayList<>();
 
         PointManager pointManager = new PointManager();
         pointManager.readPoints(filePath);
@@ -38,20 +39,22 @@ public class mainProcessor {
             gridManager.mapToGrid(curPoint);
             t++;
         }
+        gridManager.updateGrids(t);
         grids = gridManager.getGrids();
 
+        //分裂的delta为2.2
         GDPCluster currentGDPC = new GDPCluster(grids, 2.5);
-        currentGDPC.process(t);
+        currentGDPC.process(t, gridManager.Dh, gridManager.Dl);
         //currentGDPC.info();
-        HashMap<Integer, Cluster> currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
+        HashMap<Integer, GDMCluster> currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
 
         //聚类结果显示模块
         ResultViewer resultViewer = new ResultViewer();
         resultViewer.showChart(currentClusters);
 
         EvolutionDetector ed = new EvolutionDetector(2, 0.4, 2);
-        System.out.println("计算第一次中心点漂移值");
-        ed.isShift(currentClusters);
+        //第一次计算中心点偏移值
+        ed.setLatestShiftAttrs(currentClusters);
 
         while (t < points.size()) {
             // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
@@ -60,13 +63,16 @@ public class mainProcessor {
                 t++;
                 gridManager.mapToGrid(curPoint, currentGDPC.getCenters());
             }
+            //更新网格密度等
+            gridManager.updateGrids(t);
             // 均值漂移检测
-            if (ed.isShift(currentGDPC.getClusters())) {
-                System.out.println("t=" + t + "，发生漂移啦啊！");
-                currentGDPC.process(t);
+            if (ed.isShift(currentGDPC.getClusters(), gridManager.avg)) {
+                System.out.println("t=" + t + "，检测可能有发生！");
+                currentGDPC.process(t, gridManager.Dh, gridManager.Dl);
                 //currentGDPC.info();
-                HashMap<Integer, Cluster> latestClusters = SerializationUtils.clone(currentClusters);
+                HashMap<Integer, GDMCluster> latestClusters = SerializationUtils.clone(currentClusters);
                 currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
+                ed.setLatestShiftAttrs(currentClusters);
                 resultViewer.showChart(currentClusters);
                 EvolutionRecognizer evolutionRecognizer = new EvolutionRecognizer(latestClusters, currentClusters);
                 evolutionRecognizer.process();

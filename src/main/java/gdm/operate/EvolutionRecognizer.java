@@ -1,21 +1,21 @@
-package GDMC.operate;
+package gdm.operate;
 
-import GDMC.model.Cluster;
-import GDMC.model.Grid;
+import gdm.model.GDMCluster;
+import gdm.model.GDMGrid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import static GDMC.util.Functions.swapKV;
+import static common.util.Functions.swapKV;
 
 /**
  * Created by jxm on 2021/7/23.
  */
 public class EvolutionRecognizer {
-    private HashMap<Integer, Cluster> latestClusters;
-    private HashMap<Integer, Cluster> currentClusters;
+    private HashMap<Integer, GDMCluster> latestClusters;
+    private HashMap<Integer, GDMCluster> currentClusters;
     private HashSet<Integer> currentSet;
     //存储的是已消失的latestCluster的label
     private ArrayList<Integer> deadList;
@@ -26,8 +26,8 @@ public class EvolutionRecognizer {
     //存储的是仍活着的currentCluster的label，表明其在latesteCluster里也有存在过
     private ArrayList<Integer> survivalList;
 
-    private HashMap<Cluster, Integer> sizeTransitionList = new HashMap<>();
-    private HashMap<Cluster, Integer> compactTransitionList = new HashMap<>();
+    private HashMap<GDMCluster, Integer> sizeTransitionList = new HashMap<>();
+    private HashMap<GDMCluster, Integer> compactTransitionList = new HashMap<>();
 
     /*
     key: latestCluster的label
@@ -51,7 +51,7 @@ public class EvolutionRecognizer {
     private double delta = 0.5;
 
 
-    public EvolutionRecognizer(HashMap<Integer, Cluster> latestClusters, HashMap<Integer, Cluster> currentClusters) {
+    public EvolutionRecognizer(HashMap<Integer, GDMCluster> latestClusters, HashMap<Integer, GDMCluster> currentClusters) {
         this.latestClusters = latestClusters;
         this.currentClusters = currentClusters;
     }
@@ -88,16 +88,16 @@ public class EvolutionRecognizer {
         System.out.println(sb.toString());
     }
 
-    private double getOverlap(Cluster x, Cluster y) {
-        ArrayList<Grid> xGrids = x.getGrids();
-        ArrayList<Grid> yGrids = y.getGrids();
-        ArrayList<Grid> jointGrids = new ArrayList<>();
+    private double getOverlap(GDMCluster x, GDMCluster y) {
+        ArrayList<GDMGrid> xGrids = x.getGrids();
+        ArrayList<GDMGrid> yGrids = y.getGrids();
+        ArrayList<GDMGrid> jointGrids = new ArrayList<>();
         double jointDensity = 0.0;
         double xDensity = 0.0;
-        for (Grid xGrid : xGrids) {
+        for (GDMGrid xGrid : xGrids) {
             int index = yGrids.indexOf(xGrid);
             if (index != -1) {
-                Grid yGrid = yGrids.get(index);
+                GDMGrid yGrid = yGrids.get(index);
                 jointDensity += yGrid.getDensity();
             }
             xDensity += xGrid.getDensity();
@@ -113,15 +113,15 @@ public class EvolutionRecognizer {
      */
     private HashMap<Integer, Integer> splitAnalyze() {
         HashMap<Integer, Integer> survivals = new HashMap<>();
-        for (Map.Entry<Integer, Cluster> latestEntry : latestClusters.entrySet()) {
+        for (Map.Entry<Integer, GDMCluster> latestEntry : latestClusters.entrySet()) {
             int xLabel = latestEntry.getKey();
-            Cluster x = latestEntry.getValue();
+            GDMCluster x = latestEntry.getValue();
             ArrayList<Integer> splitUnion = new ArrayList<>();
             int survivalCandicate = -1;
             double overlapMax = 0.0;
 
-            for (Map.Entry<Integer, Cluster> currentEntry : currentClusters.entrySet()) {
-                Cluster y = currentEntry.getValue();
+            for (Map.Entry<Integer, GDMCluster> currentEntry : currentClusters.entrySet()) {
+                GDMCluster y = currentEntry.getValue();
                 int yLabel = currentEntry.getKey();
                 double overlap = getOverlap(x, y);
                 if (overlap >= tau) {
@@ -138,7 +138,7 @@ public class EvolutionRecognizer {
                 this.deadList.add(xLabel);
             }
             else if (!splitUnion.isEmpty()) {
-                Cluster splitCluster = combineClusters(splitUnion, currentClusters);
+                GDMCluster splitCluster = combineClusters(splitUnion, currentClusters);
                 if (getOverlap(x, splitCluster) >= tau) {
                     this.splitList.put(xLabel, splitUnion);
                     currentSet.addAll(splitUnion);
@@ -160,8 +160,8 @@ public class EvolutionRecognizer {
     合并分析
      */
     private void mergeAnalyze(HashMap<Integer, ArrayList<Integer>> mergeOrSurvival) {
-        for (Map.Entry<Integer, Cluster> currentEntry : currentClusters.entrySet()) {
-            Cluster y = currentEntry.getValue();
+        for (Map.Entry<Integer, GDMCluster> currentEntry : currentClusters.entrySet()) {
+            GDMCluster y = currentEntry.getValue();
             int yLabel = currentEntry.getKey();
             currentSet.add(yLabel);
             if (mergeOrSurvival.containsKey(yLabel)) {
@@ -197,15 +197,15 @@ public class EvolutionRecognizer {
         }
     }
 
-    private Cluster combineClusters(ArrayList<Integer> list, HashMap<Integer, Cluster> clusters) {
-        Cluster cluster = new Cluster();
+    private GDMCluster combineClusters(ArrayList<Integer> list, HashMap<Integer, GDMCluster> clusters) {
+        GDMCluster cluster = new GDMCluster(-1);
         for (Integer integer : list) {
             cluster.merge(clusters.get(integer));
         }
         return cluster;
     }
 
-    public void sizeTransition(Cluster x, Cluster y) {
+    public void sizeTransition(GDMCluster x, GDMCluster y) {
         double density_x = x.getDensity();
         double density_y = y.getDensity();
         double deltaDensity = Math.abs(density_x - density_y);
@@ -217,7 +217,7 @@ public class EvolutionRecognizer {
         }
     }
 
-    public void compactTransition(Cluster x, Cluster y) {
+    public void compactTransition(GDMCluster x, GDMCluster y) {
         double standardDeviation_x = x.getStandardDeviation();
         double standardDeviation_y = y.getStandardDeviation();
         double deltaStandardDeviation = Math.abs(standardDeviation_x - standardDeviation_y);

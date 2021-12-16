@@ -1,18 +1,17 @@
-package GDMC.operate;
+package gdm.operate;
 
-import GDMC.model.Cluster;
-import GDMC.model.Grid;
-import GDMC.model.Point;
+//import gdm.model.Grid;
+import common.model.Point;
+import gdm.model.GDMGrid;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by jxm on 2021/7/21.
  */
 public class GridManager {
     // 网格列表
-    private ArrayList<Grid> grids;
+    private ArrayList<GDMGrid> grids;
 
     // 衰减函数
     private double lambda;
@@ -20,16 +19,25 @@ public class GridManager {
     // 网格单位长度
     private double len;
 
+    // 网格密度平均值
+    public double avg;
+    // 网格密度阈值
+    public double Dh;
+    public double Dl;
+
     public GridManager(double lambda, double len) {
         this.lambda = lambda;
         this.len = len;
         this.grids = new ArrayList<>();
+        this.Dh = 0.0;
+        this.Dl = 0.0;
+        this.avg = 0.0;
     }
 
     public void mapToGrid(Point point) {
         int[] vector = new int[2];
         vector = point.mapToGrid(len);
-        Grid grid = new Grid(lambda, point, vector);
+        GDMGrid grid = new GDMGrid(vector, lambda, point);
         int index = grids.indexOf(grid);
         if (index == -1) {
             grids.add(grid);
@@ -38,16 +46,41 @@ public class GridManager {
         }
     }
 
-    public void mapToGrid(Point point, ArrayList<Grid> centers) {
+    public void updateGrids(long time) {
+        double totalDensity = 0.0;
+        for (GDMGrid grid : grids) {
+            grid.updateDensity(time);
+            totalDensity += grid.getDensity();
+        }
+        avg = totalDensity / grids.size();
+        int denseNum=0, sparseNum = 0;
+        double totalDense = 0.0, totalSparse = 0.0;
+        ArrayList<GDMGrid> sparseGrids = new ArrayList<>();
+        for (GDMGrid grid : grids) {
+            double curDensity = grid.getDensity();
+            if (curDensity >= avg) {
+                totalDense += curDensity;
+                denseNum++;
+            } else {
+                totalSparse += curDensity;
+                sparseNum++;
+            }
+        }
+        Dh = totalDense / denseNum;
+        Dl = totalSparse / sparseNum;
+        grids.removeIf(grid -> grid.getDensity() <= Dl);
+    }
+
+    public void mapToGrid(Point point, ArrayList<GDMGrid> centers) {
         int[] vector = new int[2];
         vector = point.mapToGrid(len);
-        Grid grid = new Grid(lambda, point, vector);
+        GDMGrid grid = new GDMGrid(vector, lambda, point);
         int index = grids.indexOf(grid);
         // 如果是新增网格，计算距离最近的聚类中心，并将其分配给它
         if (index == -1) {
             double minDistance = Double.MAX_VALUE;
-            Grid nearestCenter = null;
-            for (Grid center : centers) {
+            GDMGrid nearestCenter = null;
+            for (GDMGrid center : centers) {
                 double curDistance = grid.calDistance(center);
                 if (curDistance < minDistance) {
                     nearestCenter = center;
@@ -65,16 +98,12 @@ public class GridManager {
     }
 
     public void gridsInfo() {
-        int count = 0;
-        for (int i = 0; i < grids.size(); i++) {
-            Grid grid = grids.get(i);
+        for (GDMGrid grid : grids) {
             System.out.println(grid);
-            count += grid.getDensity();
         }
-        System.out.println("包含点数：" + count);
     }
 
-    public ArrayList<Grid> getGrids() {
+    public ArrayList<GDMGrid> getGrids() {
         return grids;
     }
 }

@@ -1,6 +1,6 @@
-package GDMC.operate;
+package common.operate;
 
-import GDMC.model.Point;
+import common.model.Point;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.ArrayList;
  * Created by jxm on 2021/7/21.
  */
 public class PointManager {
-    private ArrayList<Point> points;
 
+    private ArrayList<Point> points;
 
     public void readPoints(String filePath) throws IOException {
         points = new ArrayList<>();
