@@ -8,17 +8,19 @@ import esa.operate.ClusteringEngine;
 import esa.operate.GridManager;
 import esa.operate.ResultViewer;
 import org.apache.commons.lang3.SerializationUtils;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ESAStream {
-    public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\aggregation.txt";
-    public static int initNum = 788;
+    public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
+    public static int initNum = 1000;
 
 
     public static void main(String[] args) throws IOException {
+        long start = System.currentTimeMillis();
         ArrayList<Point> points = new ArrayList<>();
         ArrayList<ESAGrid> grids = new ArrayList<>();
 
@@ -60,6 +62,7 @@ public class ESAStream {
             }
             //更新网格密度等
             gridManager.updateAllGrids(t);
+            nextTime = (int) gridManager.gap;
             // 均值漂移检测
 
             currentESA.process(gridManager.Du, gridManager.Dl);
@@ -68,6 +71,9 @@ public class ESAStream {
             currentClusters = SerializationUtils.clone(currentESA.getClusters());
             resultViewer.showChart(currentClusters);
         }
+
+        long end = System.currentTimeMillis();
+        System.out.println("运行时间:" + (end - start));
     }
 
 }

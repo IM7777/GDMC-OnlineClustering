@@ -53,7 +53,8 @@ public class GridManager {
             }
         }
         Du = totalDenseDensity / denseNum;
-        gap = (long) Math.floor(Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda))));
+        gap = (long) Math.floor(
+                Math.log(Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda))))/Math.log(lambda));
         grids.removeIf(grid -> grid.getDensity() < Dl);
     }
 

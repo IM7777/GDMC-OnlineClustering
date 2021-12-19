@@ -45,11 +45,11 @@ public class ResultViewer {
 
         xyplot.setBackgroundPaint(new Color(255, 253, 246));
         ValueAxis vaaxis = xyplot.getDomainAxis();
-        vaaxis.setRange(0,1);
+        vaaxis.setRange(0,10);
         vaaxis.setAxisLineStroke(new BasicStroke(1.5f));
 
         ValueAxis yAxis = xyplot.getRangeAxis();
-        yAxis.setRange(0,1);
+        yAxis.setRange(0,10);
 
         ValueAxis va = xyplot.getDomainAxis(0);
         va.setAxisLineStroke(new BasicStroke(1.5f));

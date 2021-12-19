@@ -8,6 +8,7 @@ import common.operate.PointManager;
 import gdm.operate.ResultViewer;
 import gdm.operate.*;
 import org.apache.commons.lang3.SerializationUtils;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ public class GDMClustering {
 
 
     public static void main(String[] args) throws IOException {
+        long start = System.currentTimeMillis();
+
         ArrayList<Point> points = new ArrayList<>();
         ArrayList<GDMGrid> grids = new ArrayList<>();
 
@@ -74,10 +77,15 @@ public class GDMClustering {
                 currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
                 ed.setLatestShiftAttrs(currentClusters);
                 resultViewer.showChart(currentClusters);
+                //演化分析
+                /*
                 EvolutionRecognizer evolutionRecognizer = new EvolutionRecognizer(latestClusters, currentClusters);
                 evolutionRecognizer.process();
+                 */
             }
         }
+        long end = System.currentTimeMillis();
+        System.out.println("运行时间：" + (end - start));
 
     }
 }

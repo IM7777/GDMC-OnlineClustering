@@ -12,11 +12,19 @@ public class Point implements Serializable {
     private double[] attr;
     private int id;
     private int dim;
+    private int label;
 
     public Point(double[] attr, int id) {
         this.attr = attr;
         this.id = id;
         this.dim = attr.length;
+    }
+
+    public Point(double[] attr, int id, int label) {
+        this.attr = attr;
+        this.id = id;
+        this.dim = attr.length;
+        this.label = label;
     }
 
     public int[] mapToGrid(double len) {

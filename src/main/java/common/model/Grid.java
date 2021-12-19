@@ -88,6 +88,10 @@ public class Grid implements Serializable {
         this.label = label;
     }
 
+    public int[] getVector() {
+        return vector;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
