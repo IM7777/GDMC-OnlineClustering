@@ -4,11 +4,10 @@ import common.model.Point;
 import common.operate.PointManager;
 import esa.model.ESACluster;
 import esa.model.ESAGrid;
-import esa.operate.ClusteringEngine;
+import esa.operate.ECSCluster;
 import esa.operate.GridManager;
 import esa.operate.ResultViewer;
 import org.apache.commons.lang3.SerializationUtils;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class ESAStream {
         grids = gridManager.getGrids();
 
         //分裂的delta为2.2
-        ClusteringEngine currentESA = new ClusteringEngine(grids, gridManager.len);
+        ECSCluster currentESA = new ECSCluster(grids, gridManager.len);
         currentESA.process(gridManager.Du, gridManager.Dl);
         //currentGDPC.info();
         HashMap<Integer, ESACluster> currentClusters = SerializationUtils.clone(currentESA.getClusters());

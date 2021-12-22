@@ -1,19 +1,21 @@
 package esa.operate;
 
+import common.model.Point;
+import common.operate.PointManager;
 import esa.model.ESACluster;
 import esa.model.ESAGrid;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
-public class ClusteringEngine {
+public class ECSCluster {
     private ArrayList<ESAGrid> grids;
     private double Du;
     private double Dl;
     private double len;
 
-    public ClusteringEngine(ArrayList<ESAGrid> grids, double len) {
+    public ECSCluster(ArrayList<ESAGrid> grids, double len) {
         this.grids = grids;
         this.len = len;
     }
@@ -79,5 +81,28 @@ public class ClusteringEngine {
         return clusters;
     }
 
+    public static void main(String[] args) throws IOException {
+        String filePath = "C:\\Users\\Celeste\\Desktop\\data\\overview.txt";
+        PointManager pointManager = new PointManager();
+        pointManager.readPointsWithLabel(filePath);
+
+        ArrayList<Point> points = pointManager.getPoints();
+
+        GridManager gridManager = new GridManager(1, 0.1);
+
+        for (Point point : points)
+            gridManager.map(point);
+
+        ArrayList<ESAGrid> grids = gridManager.getGrids();
+        ECSCluster ESAClusteirng = new ECSCluster(grids, gridManager.len);
+        long st = System.currentTimeMillis();
+        ESAClusteirng.process(gridManager.Du, gridManager.Dl);
+        long ed = System.currentTimeMillis();
+        ResultViewer resultViewer = new ResultViewer();
+        resultViewer.showChart(ESAClusteirng.getClusters());
+        System.out.println("ESA:" + (ed - st));
+
+
+    }
 
 }

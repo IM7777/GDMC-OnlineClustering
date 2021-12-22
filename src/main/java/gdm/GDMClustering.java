@@ -47,7 +47,7 @@ public class GDMClustering {
 
         //分裂的delta为2.2
         GDPCluster currentGDPC = new GDPCluster(grids, 2.5);
-        currentGDPC.process(t, gridManager.Dh, gridManager.Dl);
+        currentGDPC.process(gridManager.Dh);
         //currentGDPC.info();
         HashMap<Integer, GDMCluster> currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
 
@@ -71,7 +71,7 @@ public class GDMClustering {
             // 均值漂移检测
             if (ed.isShift(currentGDPC.getClusters(), gridManager.avg)) {
                 System.out.println("t=" + t + "，检测可能有发生！");
-                currentGDPC.process(t, gridManager.Dh, gridManager.Dl);
+                currentGDPC.process(gridManager.Dh);
                 //currentGDPC.info();
                 HashMap<Integer, GDMCluster> latestClusters = SerializationUtils.clone(currentClusters);
                 currentClusters = SerializationUtils.clone(currentGDPC.getClusters());
