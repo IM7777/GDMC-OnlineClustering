@@ -21,7 +21,7 @@ public class ParallelECSCluster {
     /* key: partitionId
        value: {key: label, value: cluster}
      */
-    private ConcurrentHashMap<Integer, HashMap<Integer, ESACluster>> localClusters;
+    private ConcurrentHashMap<Integer, ESACluster> globalClusters;
     private int parallelism;
     private double Du;
     private double Dl;
@@ -36,7 +36,7 @@ public class ParallelECSCluster {
     private void partition() {
         localBorders = new ConcurrentHashMap<>();
         localGrids = new ConcurrentHashMap<>();
-        localClusters = new ConcurrentHashMap<>();
+        globalClusters = new ConcurrentHashMap<>();
         globalGrids = new ConcurrentHashMap<>();
 
         if (parallelism == 2) {
@@ -49,7 +49,6 @@ public class ParallelECSCluster {
                 border.add((i + 1) * step_y);
                 localBorders.put(i, border);
                 localGrids.put(i, new ArrayList<>());
-                localClusters.put(i, new HashMap<>());
                 globalGrids.put(i, new ArrayList<>());
             }
 
@@ -79,7 +78,6 @@ public class ParallelECSCluster {
                 }
                 localBorders.put(i, border);
                 localGrids.put(i, new ArrayList<>());
-                localClusters.put(i, new HashMap<>());
                 globalGrids.put(i, new ArrayList<>());
             }
 
@@ -114,7 +112,6 @@ public class ParallelECSCluster {
                 }
                 localGrids.put(i, new ArrayList<>());
                 localBorders.put(i, border);
-                localClusters.put(i, new HashMap<>());
                 globalGrids.put(i, new ArrayList<>());
             }
 
@@ -165,7 +162,6 @@ public class ParallelECSCluster {
                 }
                 localBorders.put(i, border);
                 localGrids.put(i, new ArrayList<>());
-                localClusters.put(i, new HashMap<>());
                 globalGrids.put(i, new ArrayList<>());
             }
             for (ESAGrid grid : grids) {
@@ -215,7 +211,6 @@ public class ParallelECSCluster {
                 }
                 localGrids.put(i, new ArrayList<>());
                 localBorders.put(i, border);
-                localClusters.put(i, new HashMap<>());
                 globalGrids.put(i, new ArrayList<>());
             }
             for (ESAGrid grid : grids) {
@@ -254,7 +249,7 @@ public class ParallelECSCluster {
         LocalGMS[] localGMSThread = new LocalGMS[parallelism];
         CountDownLatch countDownLatch = new CountDownLatch(parallelism);
         for (int i = 0; i < parallelism; i++) {
-            localGMSThread[i] = new LocalGMS(localGrids.get(i), localBorders.get(i), localClusters.get(i),
+            localGMSThread[i] = new LocalGMS(localGrids.get(i), localBorders.get(i), globalClusters,
                     i, globalGrids, countDownLatch, Du, Dl, len);
             localGMSThread[i].start();
         }
@@ -299,11 +294,9 @@ public class ParallelECSCluster {
                             neighbor = globalGrids.get(partitionId2).get(neighborIndex);
                             int label2 = neighbor.getLabel();
                             if (label1 != label2) {
-                                ESACluster neighborCluster = localClusters.get(partitionId2).get(label2);
-                                // 如果某个聚类已经被合并过一次之后再重新去原localClusters找就会为返回为null
-                                localClusters.get(partitionId1).get(label1).merge(neighborCluster);
-                                // 将合并的邻居聚类从localClusters中移除
-                                localClusters.get(partitionId2).remove(label2);
+                                ESACluster neighborCluster = globalClusters.get(label2);
+                                globalClusters.get(label1).merge(neighborCluster);
+                                globalClusters.remove(label2);
                             }
                         }
                     }
@@ -354,7 +347,7 @@ public class ParallelECSCluster {
         gridManager.updateAllGrids(3000);
         ArrayList<ESAGrid> grids = gridManager.getGrids();
         long st = System.currentTimeMillis();
-        ParallelECSCluster pesa = new ParallelECSCluster(gridManager.len, grids, 6);
+        ParallelECSCluster pesa = new ParallelECSCluster(gridManager.len, grids, 2);
 
         pesa.process(gridManager.Du/2, gridManager.Dl);
         long ed = System.currentTimeMillis();

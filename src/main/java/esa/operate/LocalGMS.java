@@ -13,20 +13,20 @@ public class LocalGMS extends Thread {
     private ArrayList<Double> borders;
     private int partitionId;
     private ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids;
-    private HashMap<Integer, ESACluster> clusters;
+    private ConcurrentHashMap<Integer, ESACluster> globalClusters;
     private CountDownLatch countDownLatch;
     private double Du;
     private double Dl;
     private double len;
 
-    public LocalGMS(ArrayList<ESAGrid> grids, ArrayList<Double> borders, HashMap<Integer, ESACluster> clusters,
+    public LocalGMS(ArrayList<ESAGrid> grids, ArrayList<Double> borders, ConcurrentHashMap<Integer, ESACluster> globalClusters,
                     int partitionId, ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids,
                     CountDownLatch countDownLatch, double Du, double Dl, double len) {
         this.grids = grids;
         this.borders = borders;
         this.partitionId = partitionId;
         this.globalGrids = globalGrids;
-        this.clusters = clusters;
+        this.globalClusters = globalClusters;
         this.countDownLatch = countDownLatch;
         this.Du = Du;
         this.Dl = Dl;
@@ -89,9 +89,9 @@ public class LocalGMS extends Thread {
         for (ESAGrid grid : grids) {
             int label = grid.getLabel();
             if (label != -1) {
-                ESACluster cluster = clusters.getOrDefault(label, new ESACluster(label));
+                ESACluster cluster = globalClusters.getOrDefault(label, new ESACluster(label));
                 cluster.addGrid(grid);
-                clusters.put(label, cluster);
+                globalClusters.put(label, cluster);
             }
         }
     }

@@ -134,7 +134,7 @@ public class GDPCluster {
         long st = System.currentTimeMillis();
         gdpCluster.process(gridManager.Dh);
         long ed = System.currentTimeMillis();
-        System.out.println("GDM:" + (ed - st));
+        System.out.println("GDP:" + (ed - st));
         //聚类结果显示模块
         ResultViewer resultViewer = new ResultViewer();
         //resultViewer.showChart(gdpCluster.getClusters());

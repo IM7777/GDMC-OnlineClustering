@@ -375,7 +375,7 @@ public class ParallelGDPCluster {
         long st = System.currentTimeMillis();
         parallelCluster.process(gridManager.Dh);
         long ed = System.currentTimeMillis();
-        System.out.println("PGDM:" + (ed - st));
+        System.out.println("ParallelGDP:" + (ed - st));
         //聚类结果显示模块
         ResultViewer resultViewer = new ResultViewer();
         //resultViewer.showChart(parallelCluster.getClusters());
