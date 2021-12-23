@@ -11,4 +11,12 @@ public class ESACluster extends Cluster<ESAGrid> {
     }
 
 
+    public void merge(ESACluster tempCluster) {
+        for (ESAGrid tempGrid : tempCluster.getGrids()) {
+            tempGrid.setLabel(label);
+            grids.add(tempGrid);
+        }
+    }
+
+
 }

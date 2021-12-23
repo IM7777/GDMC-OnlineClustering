@@ -1,8 +1,11 @@
 package esa.operate;
 import common.model.Point;
+import common.util.Functions;
 import esa.model.ESAGrid;
 
 import java.util.ArrayList;
+
+import static common.util.Functions.log;
 
 public class GridManager {
     // lower thresholds
@@ -43,20 +46,22 @@ public class GridManager {
             grid.setLabel(-1);
         }
         int Mt = grids.size();
-        Dl = 2.0 / 3 * Mt * (1 - lambda);
-        double totalDenseDensity = 0.0;
-        int denseNum = 0;
+        Dl = 2.0 / (3 * Mt * (1 - lambda));
+        double totalNonSparseDensity = 0.0;
+        int nonSparseNum = 0;
         for (ESAGrid grid : grids) {
             if (grid.getDensity() > Dl) {
-                totalDenseDensity += grid.getDensity();
-                denseNum++;
+                totalNonSparseDensity += grid.getDensity();
+                nonSparseNum++;
             }
         }
-        Du = totalDenseDensity / denseNum;
-        gap = (long) Math.floor(
-                Math.log(Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda))))/Math.log(lambda));
+        Du = totalNonSparseDensity / nonSparseNum;
+        gap = (long) Math.floor(log(lambda,
+                                    Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
+        gap = gap < 1 ? 1 : gap;
         grids.removeIf(grid -> grid.getDensity() < Dl);
     }
+
 
     public ArrayList<ESAGrid> getGrids() {
         return grids;

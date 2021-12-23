@@ -19,10 +19,6 @@ public class Cluster<T> implements Serializable {
         grids.add(grid);
     }
 
-    public void merge(Cluster<T> cluster) {
-        grids.addAll(cluster.getGrids());
-    }
-
     public boolean isEmpty() {
         return grids.size() == 0;
     }
@@ -31,7 +27,16 @@ public class Cluster<T> implements Serializable {
         return label;
     }
 
+    public void setLabel(int label) {
+        this.label = label;
+    }
+
     public ArrayList<T> getGrids() {
         return grids;
     }
+
+    public void merge(Cluster<T> cluster) {
+        grids.addAll(cluster.getGrids());
+    }
+
 }

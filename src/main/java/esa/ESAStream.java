@@ -29,7 +29,7 @@ public class ESAStream {
 
         int t = 0;
         // 网格管理模块，设置
-        GridManager gridManager = new GridManager(0.997, 0.1);
+        GridManager gridManager = new GridManager(0.998, 0.1);
 
         // 初始聚类
         while (t < initNum) {

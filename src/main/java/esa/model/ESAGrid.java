@@ -4,6 +4,7 @@ import common.model.Grid;
 import common.model.Point;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ESAGrid extends Grid {
 
@@ -41,7 +42,16 @@ public class ESAGrid extends Grid {
         return neighbors;
     }
 
-
+    @Override
+    public String toString() {
+        return "ESAGrid{" +
+                "vector=" + Arrays.toString(vector) +
+                ", density=" + density +
+                ", updateTime=" + updateTime +
+                ", centroid=" + centroid +
+                ", label=" + label +
+                '}';
+    }
 
     public static void main(String[] args) {
         int[] vec = new int[]{1, 1};

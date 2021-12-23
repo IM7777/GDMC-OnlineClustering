@@ -88,19 +88,20 @@ public class ECSCluster {
 
         ArrayList<Point> points = pointManager.getPoints();
 
-        GridManager gridManager = new GridManager(1, 0.1);
+        GridManager gridManager = new GridManager(0.999, 0.1);
 
         for (Point point : points)
             gridManager.map(point);
+        gridManager.updateAllGrids(3000);
 
         ArrayList<ESAGrid> grids = gridManager.getGrids();
         ECSCluster ESAClusteirng = new ECSCluster(grids, gridManager.len);
         long st = System.currentTimeMillis();
-        ESAClusteirng.process(gridManager.Du, gridManager.Dl);
+        ESAClusteirng.process(gridManager.Du/2, gridManager.Dl);
         long ed = System.currentTimeMillis();
         ResultViewer resultViewer = new ResultViewer();
-        resultViewer.showChart(ESAClusteirng.getClusters());
-        System.out.println("ESA:" + (ed - st));
+        //resultViewer.showChart(ESAClusteirng.getClusters());
+        System.out.println("ECS:" + (ed - st));
 
 
     }

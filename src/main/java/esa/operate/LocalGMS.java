@@ -4,6 +4,7 @@ import esa.model.ESACluster;
 import esa.model.ESAGrid;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -12,18 +13,20 @@ public class LocalGMS extends Thread {
     private ArrayList<Double> borders;
     private int partitionId;
     private ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids;
+    private HashMap<Integer, ESACluster> clusters;
     private CountDownLatch countDownLatch;
     private double Du;
     private double Dl;
     private double len;
 
-    public LocalGMS(ArrayList<ESAGrid> grids, ArrayList<Double> borders, int partitionId,
-                    ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids,
+    public LocalGMS(ArrayList<ESAGrid> grids, ArrayList<Double> borders, HashMap<Integer, ESACluster> clusters,
+                    int partitionId, ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids,
                     CountDownLatch countDownLatch, double Du, double Dl, double len) {
         this.grids = grids;
         this.borders = borders;
         this.partitionId = partitionId;
         this.globalGrids = globalGrids;
+        this.clusters = clusters;
         this.countDownLatch = countDownLatch;
         this.Du = Du;
         this.Dl = Dl;
@@ -43,10 +46,11 @@ public class LocalGMS extends Thread {
         ArrayList<ESAGrid> globalGridsList = globalGrids.get(partitionId);
         for (ESAGrid grid : grids) {
             double minBorderDistance = getMinBorderDistance(grid);
-            if (minBorderDistance < len) {
+            if (grid.getLabel()!=-1 && minBorderDistance < len) {
                 globalGridsList.add(grid);
             }
         }
+        organizeClusters();
         countDownLatch.countDown();
     }
 
@@ -79,6 +83,17 @@ public class LocalGMS extends Thread {
         else if (distance <= 2.0 / 3 * len && den1 >= Dl && den2 >= Dl && den1 + den2 >= Du)
             return true;
         return false;
+    }
+
+    public void organizeClusters() {
+        for (ESAGrid grid : grids) {
+            int label = grid.getLabel();
+            if (label != -1) {
+                ESACluster cluster = clusters.getOrDefault(label, new ESACluster(label));
+                cluster.addGrid(grid);
+                clusters.put(label, cluster);
+            }
+        }
     }
 
     public double getMinBorderDistance(ESAGrid grid) {

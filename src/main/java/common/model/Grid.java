@@ -71,7 +71,7 @@ public class Grid implements Serializable {
 
     public void updateDensity(long currentTime) {
         if (currentTime > updateTime) {
-            density = Math.pow(lambda, currentTime - updateTime)*density;
+            density = Math.pow(lambda, (currentTime - updateTime)*1.0/1000)*density;
             updateTime = currentTime;
         }
     }

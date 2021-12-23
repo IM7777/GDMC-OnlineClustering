@@ -28,17 +28,18 @@ public class Functions {
         return res;
     }
 
-    public static void main(String[] args) {
-        HashMap<Integer, Integer> map = new HashMap<>();
-        for (int i = 0; i < 10; i++) {
-            if (i % 2 == 0) {
-                map.put(i, 0);
-            } else {
-                map.put(i, 1);
-            }
+    public static double log(double a, double x) {
+        if (a <= 0 || a == 1 || x <= 0) {
+            return -1;
         }
-        HashMap<Integer, ArrayList<Integer>> res = swapKV(map);
-        System.out.println(map);
+        return Math.log(x) / Math.log(a);
+    }
+
+
+    public static void main(String[] args) {
+        double a = 0.998;
+        double x = 0.31;
+        System.out.println(log(a, x));
 
     }
 
