@@ -6,6 +6,8 @@ import gdm.model.GDMGrid;
 
 import java.util.ArrayList;
 
+import static common.util.Functions.log;
+
 /**
  * Created by jxm on 2021/7/21.
  */
@@ -24,6 +26,8 @@ public class GridManager {
     // 网格密度阈值
     public double Dh;
     public double Dl;
+    // 检测间隔时间
+    public int gap;
 
     public GridManager(double lambda, double len) {
         this.lambda = lambda;
@@ -46,7 +50,7 @@ public class GridManager {
         }
     }
 
-    public void updateGrids(long time) {
+    public void updateGrids(int time) {
         double totalDensity = 0.0;
         for (GDMGrid grid : grids) {
             grid.updateDensity(time);
@@ -68,7 +72,10 @@ public class GridManager {
         }
         Dh = totalDense / denseNum;
         Dl = totalSparse / sparseNum;
-        grids.removeIf(grid -> grid.getDensity() <= Dl);
+        int Mt = grids.size();
+        gap = (int) Math.floor(log(lambda, Math.min(Dl / Dh, (1 - Dh * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
+        gap = Math.max(gap, 1);
+        grids.removeIf(grid -> grid.getDensity() < Dl);
     }
 
     public void mapToGrid(Point point, ArrayList<GDMGrid> centers) {

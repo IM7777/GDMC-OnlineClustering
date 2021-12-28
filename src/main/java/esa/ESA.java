@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ESAStream {
+public class ESA {
     public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
     public static int initNum = 1000;
 
@@ -38,41 +38,41 @@ public class ESAStream {
             t++;
         }
         gridManager.updateAllGrids(t);
-        int nextTime = (int) (t + gridManager.gap);
+        int interval = (int) gridManager.gap;
         grids = gridManager.getGrids();
 
         //分裂的delta为2.2
         ECSCluster currentESA = new ECSCluster(grids, gridManager.len);
+        System.out.println("t=" + t + ", 初始聚类！");
         currentESA.process(gridManager.Du, gridManager.Dl);
         //currentGDPC.info();
         HashMap<Integer, ESACluster> currentClusters = SerializationUtils.clone(currentESA.getClusters());
 
         //聚类结果显示模块
         ResultViewer resultViewer = new ResultViewer();
-        resultViewer.showChart(currentClusters);
+        //resultViewer.showChart(currentClusters);
 
 
         while (t < points.size()) {
             // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
-            for(int i=0; i<nextTime && t<points.size(); i++){
+            for(int i=0; i<interval && t<points.size(); i++){
                 Point curPoint = points.get((int) t);
                 t++;
                 gridManager.map(curPoint);
             }
             //更新网格密度等
             gridManager.updateAllGrids(t);
-            nextTime = (int) gridManager.gap;
-            // 均值漂移检测
-
+            interval = (int) gridManager.gap;
+            System.out.println("t=" + t + ", 发生聚类！");
             currentESA.process(gridManager.Du, gridManager.Dl);
-            //currentGDPC.info();
+
             HashMap<Integer, ESACluster> latestClusters = SerializationUtils.clone(currentClusters);
             currentClusters = SerializationUtils.clone(currentESA.getClusters());
-            resultViewer.showChart(currentClusters);
+            //resultViewer.showChart(currentClusters);
         }
 
         long end = System.currentTimeMillis();
-        System.out.println("运行时间:" + (end - start));
+        System.out.println("ESA运行时间:" + (end - start));
     }
 
 }

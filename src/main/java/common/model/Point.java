@@ -52,6 +52,10 @@ public class Point implements Serializable {
         return dim;
     }
 
+    public int getLabel() {
+        return label;
+    }
+
     @Override
     public String toString() {
         return "Point{" +

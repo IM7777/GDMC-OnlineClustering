@@ -3,6 +3,7 @@ package common.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Grid implements Serializable {
     private static final long serialVersionUID = 1365063496956976255L;
@@ -11,13 +12,14 @@ public class Grid implements Serializable {
     // 密度
     public double density;
     // 最近一次的更新时间
-    public long updateTime;
+    public int updateTime;
     // 衰减因子
     public double lambda;
     // 质心
     public Point centroid;
     // 所属标签
     public int label;
+
 
     public Grid(int[] vector, double lambda, Point point) {
         this.vector = vector;
@@ -69,9 +71,9 @@ public class Grid implements Serializable {
     }
 
 
-    public void updateDensity(long currentTime) {
+    public void updateDensity(int currentTime) {
         if (currentTime > updateTime) {
-            density = Math.pow(lambda, (currentTime - updateTime)*1.0/1000)*density;
+            density = Math.pow(lambda, (currentTime - updateTime))*density;
             updateTime = currentTime;
         }
     }
@@ -91,6 +93,8 @@ public class Grid implements Serializable {
     public int[] getVector() {
         return vector;
     }
+
+
 
     @Override
     public boolean equals(Object o) {

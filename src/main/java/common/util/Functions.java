@@ -1,5 +1,11 @@
 package common.util;
 
+import common.model.Grid;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +39,17 @@ public class Functions {
             return -1;
         }
         return Math.log(x) / Math.log(a);
+    }
+
+    public static void writeToFile(String outputFilePath, ArrayList<Grid> grids) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFilePath));
+        for (Grid grid : grids) {
+            if (grid.getLabel() != -1) {
+                String line = grid.getVector()[0] + "," + grid.getVector()[1] + "," + grid.getLabel() + "\n";
+                bw.write(line);
+            }
+        }
+        bw.close();
     }
 
 
