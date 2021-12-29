@@ -8,71 +8,114 @@ import esa.operate.ECSCluster;
 import esa.operate.GridManager;
 import esa.operate.ResultViewer;
 import org.apache.commons.lang3.SerializationUtils;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 public class ESA {
-    public static String filePath = "C:\\Users\\Celeste\\Desktop\\data\\merge.txt";
-    public static int initNum = 1000;
 
+    public String dataPath;
+    public String outputPath;
+    public int initalNum;
+    public double len;
+    public double lambda;
 
-    public static void main(String[] args) throws IOException {
-        long start = System.currentTimeMillis();
-        ArrayList<Point> points = new ArrayList<>();
-        ArrayList<ESAGrid> grids = new ArrayList<>();
+    public ArrayList<Point> points;
+    public ArrayList<ESAGrid> grids;
+    public GridManager gridManager;
+    public ResultViewer resultViewer;
 
+    public ESA(String dataPath, String outputPath, int initalNum, double len, double lambda) {
+        this.dataPath = dataPath;
+        this.outputPath = outputPath;
+        this.initalNum = initalNum;
+        this.len = len;
+        this.lambda = lambda;
+        gridManager = new GridManager(lambda, len);
+        resultViewer = new ResultViewer();
+    }
+
+    public void pointAcceptor() throws IOException {
         PointManager pointManager = new PointManager();
-        pointManager.readPoints(filePath);
+        pointManager.readPointsWithLabel(dataPath);
         points = pointManager.getPoints();
+    }
 
+    public ArrayList<Integer> process() throws IOException {
+        ArrayList<Integer> timestamps = new ArrayList<>();
+        pointAcceptor();
         int t = 0;
-        // 网格管理模块，设置
-        GridManager gridManager = new GridManager(0.998, 0.1);
 
         // 初始聚类
-        while (t < initNum) {
-            Point curPoint = points.get(t);
-            gridManager.map(curPoint);
+        while (t < initalNum) {
+            gridManager.map(points.get(t));
             t++;
         }
         gridManager.updateAllGrids(t);
-        int interval = (int) gridManager.gap;
-        grids = gridManager.getGrids();
-
-        //分裂的delta为2.2
-        ECSCluster currentESA = new ECSCluster(grids, gridManager.len);
+        timestamps.add(t);
         System.out.println("t=" + t + ", 初始聚类！");
-        currentESA.process(gridManager.Du, gridManager.Dl);
-        //currentGDPC.info();
-        HashMap<Integer, ESACluster> currentClusters = SerializationUtils.clone(currentESA.getClusters());
-
-        //聚类结果显示模块
-        ResultViewer resultViewer = new ResultViewer();
-        //resultViewer.showChart(currentClusters);
-
+        int interval = gridManager.gap;
+        grids = gridManager.getGrids();
+        ECSCluster ecsCluster = new ECSCluster(grids, gridManager.len);
+        ecsCluster.process(gridManager.Du, gridManager.Dl);
+        HashMap<Integer, ESACluster> currentClusters = SerializationUtils.clone(ecsCluster.getClusters());
+        resultViewer.showChart(currentClusters);
+        writeToFile(t);
 
         while (t < points.size()) {
-            // 映射数据至网格，对于新增的网格为其直接分配标签，否则就是更新旧网格
-            for(int i=0; i<interval && t<points.size(); i++){
-                Point curPoint = points.get((int) t);
+            for (int i = 0; i < interval && t < points.size(); i++) {
+                gridManager.map(points.get(t));
                 t++;
-                gridManager.map(curPoint);
             }
-            //更新网格密度等
             gridManager.updateAllGrids(t);
-            interval = (int) gridManager.gap;
+            timestamps.add(t);
             System.out.println("t=" + t + ", 发生聚类！");
-            currentESA.process(gridManager.Du, gridManager.Dl);
-
+            interval = gridManager.gap;
+            ecsCluster.process(gridManager.Du, gridManager.Dl);
             HashMap<Integer, ESACluster> latestClusters = SerializationUtils.clone(currentClusters);
-            currentClusters = SerializationUtils.clone(currentESA.getClusters());
-            //resultViewer.showChart(currentClusters);
+            currentClusters = SerializationUtils.clone(ecsCluster.getClusters());
+            resultViewer.showChart(currentClusters);
+            writeToFile(t);
         }
-
-        long end = System.currentTimeMillis();
-        System.out.println("ESA运行时间:" + (end - start));
+        return timestamps;
     }
 
+    public void writeToFile(int time) throws IOException {
+        String file = outputPath + lambda + "_" + len + "_" + time + ".txt";
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        for (ESAGrid grid : grids) {
+            int label = grid.getLabel();
+            if (label != -1) {
+                String line = grid.getVector()[0] + "," + grid.getVector()[1] + "," + label + "\n";
+                bw.write(line);
+            }
+        }
+        bw.close();
+    }
+
+    public void writeToFile(ArrayList<Integer> timestamps) throws IOException {
+        String file = outputPath + lambda + "_" + len + "_time.txt";
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        for (int timestamp : timestamps) {
+            bw.write(timestamp + "\n");
+        }
+        bw.close();
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        String dataPath = "C:\\Users\\Celeste\\Desktop\\data\\mergeWithLabel.txt";
+        String outputPath = "C:\\Users\\Celeste\\Desktop\\data\\result\\ESA\\";
+        long start = System.currentTimeMillis();
+        ESA esa = new ESA(dataPath, outputPath, 1000, 0.1, 0.998);
+        ArrayList<Integer> timestamps = esa.process();
+        esa.writeToFile(timestamps);
+        long end = System.currentTimeMillis();
+        System.out.println("ESA运行时间：" + (end - start));
+    }
 }

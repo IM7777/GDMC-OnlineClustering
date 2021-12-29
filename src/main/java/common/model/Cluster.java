@@ -39,4 +39,14 @@ public class Cluster<T> implements Serializable {
         grids.addAll(cluster.getGrids());
     }
 
+    public int getOverlap(ArrayList<T> sourceGrids) {
+        int overlap = 0;
+        for (T grid : grids) {
+            if (sourceGrids.indexOf(grid) != 0) {
+                overlap++;
+            }
+        }
+        return overlap;
+    }
+
 }

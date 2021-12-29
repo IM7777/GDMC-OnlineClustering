@@ -94,7 +94,13 @@ public class Grid implements Serializable {
         return vector;
     }
 
-
+    @Override
+    public String toString() {
+        return "Grid{" +
+                "vector=" + Arrays.toString(vector) +
+                ", label=" + label +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {

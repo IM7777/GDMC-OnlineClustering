@@ -41,23 +41,19 @@ public class Functions {
         return Math.log(x) / Math.log(a);
     }
 
-    public static void writeToFile(String outputFilePath, ArrayList<Grid> grids) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFilePath));
-        for (Grid grid : grids) {
-            if (grid.getLabel() != -1) {
-                String line = grid.getVector()[0] + "," + grid.getVector()[1] + "," + grid.getLabel() + "\n";
-                bw.write(line);
-            }
+    public static int Cmn(int m, int n) {
+        int res = 1;
+        for (int i = 0; i < m; i++) {
+            res = res * (n - i) / (i + 1);
         }
-        bw.close();
+        return res;
     }
 
 
     public static void main(String[] args) {
-        double a = 0.998;
-        double x = 0.31;
-        System.out.println(log(a, x));
-
+        int m = 2;
+        int n = 17;
+        System.out.println(Cmn(2, 17));
     }
 
 }

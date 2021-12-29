@@ -51,7 +51,6 @@ public class GDMC {
     }
 
     public ArrayList<Integer> process() throws IOException {
-        pointAcceptor();
         ArrayList<Integer> timestamps = new ArrayList<>();
         pointAcceptor();
         int t = 0;

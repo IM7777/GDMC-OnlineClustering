@@ -13,7 +13,7 @@ public class GridManager {
     // upper thresholds
     public double Du;
 
-    public long gap;
+    public int gap;
 
     // decay factor
     public double lambda;
@@ -56,9 +56,9 @@ public class GridManager {
             }
         }
         Du = totalNonSparseDensity / nonSparseNum;
-        gap = (long) Math.floor(log(lambda,
+        gap = (int) Math.floor(log(lambda,
                                     Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
-        gap = gap < 1 ? 1 : gap;
+        gap = Math.max(gap, 1);
         grids.removeIf(grid -> grid.getDensity() < Dl);
     }
 

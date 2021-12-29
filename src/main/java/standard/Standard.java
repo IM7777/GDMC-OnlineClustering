@@ -13,7 +13,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static common.util.Functions.writeToFile;
 
 public class Standard {
     public String outputPath;
@@ -65,7 +64,7 @@ public class Standard {
                 t++;
             }
             gridManager.updateAllGrids(t);
-            //writeToFile(t);
+            writeToFile(t);
             ClusterProcessor cp = new ClusterProcessor(grids);
             HashMap<Integer, StdCluster> clusters = cp.getClusters();
             resultViewer.showChart(clusters);
@@ -74,7 +73,7 @@ public class Standard {
 
     public void writeToFile(int t) throws IOException {
         String file = outputPath + lambda + "_" + len + "_" + t + ".txt";
-        BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         for (StdGrid grid : grids) {
             int label = grid.getLabel();
             if (label != -1) {
@@ -98,8 +97,12 @@ public class Standard {
 
     public static void main(String[] args) throws IOException {
         String dataPath = "C:\\Users\\Celeste\\Desktop\\data\\mergeWithLabel.txt";
-        String timePath = "C:\\Users\\Celeste\\Desktop\\data\\result\\GDMC\\";
-        String outputPath = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\gdmc";
+
+        //String timePath = "C:\\Users\\Celeste\\Desktop\\data\\result\\GDMC\\";
+        //String outputPath = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\gdmc\\";
+
+        String timePath = "C:\\Users\\Celeste\\Desktop\\data\\result\\ESA\\";
+        String outputPath = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\esa\\";
         Standard std = new Standard(dataPath, outputPath, timePath, 0.998, 0.1);
         std.GDMCProcess();
     }
