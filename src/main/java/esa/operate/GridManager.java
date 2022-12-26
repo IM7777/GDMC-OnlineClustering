@@ -56,10 +56,12 @@ public class GridManager {
             }
         }
         Du = totalNonSparseDensity / nonSparseNum;
+        int delta1 = (int) Math.floor(log(lambda, Dl / Du));
+        int delta2 = (int) Math.floor(log(lambda, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda))));
         gap = (int) Math.floor(log(lambda,
-                                    Math.min(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
-        gap = Math.max(gap, 1);
-        grids.removeIf(grid -> grid.getDensity() < Dl);
+                                    Math.max(Dl / Du, (1 - Du * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
+        gap = delta1;
+        grids.removeIf(grid -> grid.getDensity() < Dl * 0.1);
     }
 
 

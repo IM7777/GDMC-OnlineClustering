@@ -27,6 +27,18 @@ public class Point implements Serializable {
         this.label = label;
     }
 
+    public void standard(){
+        for (int i =0; i<dim; i++){
+            if (attr[i] == 0.0)
+                break;
+            if (attr[i] == 10.0) {
+                attr[i] = 1.0;
+                break;
+            }
+            attr[i] = (10.0-attr[i])/10;
+        }
+    }
+
     public int[] mapToGrid(double len) {
         int[] vec = new int[dim];
         for (int i=0;i<vec.length;i++) {

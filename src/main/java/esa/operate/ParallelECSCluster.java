@@ -18,6 +18,7 @@ public class ParallelECSCluster {
     private ConcurrentHashMap<Integer, ArrayList<ESAGrid>> localGrids;
     private ConcurrentHashMap<Integer, ArrayList<Double>> localBorders;
     private ConcurrentHashMap<Integer, ArrayList<ESAGrid>> globalGrids;
+
     /* key: partitionId
        value: {key: label, value: cluster}
      */
@@ -335,7 +336,7 @@ public class ParallelECSCluster {
     public static void main(String[] args) throws IOException, InterruptedException {
         String filePath = "C:\\Users\\Celeste\\Desktop\\data\\overview.txt";
         PointManager pointManager = new PointManager();
-        pointManager.readPointsWithLabel(filePath);
+        pointManager.readPointsWithLabel(2, filePath);
 
         ArrayList<Point> points = pointManager.getPoints();
 

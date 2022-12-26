@@ -84,7 +84,7 @@ public class ECSCluster {
     public static void main(String[] args) throws IOException {
         String filePath = "C:\\Users\\Celeste\\Desktop\\data\\overview.txt";
         PointManager pointManager = new PointManager();
-        pointManager.readPointsWithLabel(filePath);
+        pointManager.readPointsWithLabel(2, filePath);
 
         ArrayList<Point> points = pointManager.getPoints();
 

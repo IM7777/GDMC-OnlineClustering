@@ -26,119 +26,59 @@ public class ParallelGDPCluster {
         this.parallelism = parallelism;
         this.deltaThreshold = deltaThreshold;
         this.grids = grids;
-        allocateGrids();
+        initialBorder();
     }
 
-    private void allocateGrids() {
-        //先将grids进行并行排序
-        grids.sort(new Comparator<GDMGrid>() {
-            @Override
-            public int compare(GDMGrid o1, GDMGrid o2) {
-                return Double.compare(o2.getDensity(), o1.getDensity());
-            }
-        });
-        localGrids = new ConcurrentHashMap<>();
+    public void initialBorder() {
         localBorders = new ConcurrentHashMap<>();
-        globalGrids = new ConcurrentHashMap<>();
         if (parallelism == 2) {
-            double step_y = 5.0;
+            double step_y = 0.5;
             for (int i = 0; i < parallelism; i++) {
                 ArrayList<Double> border = new ArrayList<>();
                 border.add(0.0);
-                border.add(10.0);
+                border.add(1.0);
                 border.add(i * step_y);
                 border.add((i + 1) * step_y);
                 localBorders.put(i, border);
-                localGrids.put(i, new ArrayList<>());
-                globalGrids.put(i, new ArrayList<>());
-            }
-
-            for (GDMGrid grid : grids) {
-                if (grid.centroid.getAttr()[1] >= 5) {
-                    ArrayList<GDMGrid> lgrids = localGrids.get(1);
-                    lgrids.add(grid);
-                } else {
-                    ArrayList<GDMGrid> lgrids = localGrids.get(0);
-                    lgrids.add(grid);
-                }
             }
         } else if (parallelism == 3) {
-            double step_x = 5.0;
+            double step_x = 0.5;
             for (int i = 0; i < parallelism; i++) {
                 ArrayList<Double> border = new ArrayList<>();
                 if (i == 0) {
                     border.add(0.0);
-                    border.add(10.0);
+                    border.add(1.0);
                     border.add(0.0);
-                    border.add(5.0);
+                    border.add(0.5);
                 } else {
                     border.add((i - 1) * step_x);
                     border.add(i * step_x);
-                    border.add(5.0);
-                    border.add(10.0);
+                    border.add(0.5);
+                    border.add(1.0);
                 }
                 localBorders.put(i, border);
-                localGrids.put(i, new ArrayList<>());
-                globalGrids.put(i, new ArrayList<>());
             }
-
-            for (GDMGrid grid : grids) {
-                if (grid.centroid.getAttr()[1] < 5) {
-                    ArrayList<GDMGrid> lgrids = localGrids.get(0);
-                    lgrids.add(grid);
-                } else if (grid.centroid.getAttr()[0] < 5) {
-                    ArrayList<GDMGrid> lgrids = localGrids.get(1);
-                    lgrids.add(grid);
-                } else {
-                    ArrayList<GDMGrid> lgrids = localGrids.get(2);
-                    lgrids.add(grid);
-                }
-            }
-
         } else if (parallelism == 4) {
-            double step_x = 5.0;
-            double step_y = 5.0;
+            double step_x = 0.5;
+            double step_y = 0.5;
             for (int i = 0; i < parallelism; i++) {
                 ArrayList<Double> border = new ArrayList<>();
                 if (i <= 1) {
                     border.add(i * step_x);
                     border.add((i + 1) * step_x);
                     border.add(0.0);
-                    border.add(5.0);
+                    border.add(0.5);
                 } else {
                     border.add((i - 2) * step_x);
                     border.add((i - 1) * step_x);
-                    border.add(5.0);
-                    border.add(10.0);
+                    border.add(0.5);
+                    border.add(1.0);
                 }
-                localGrids.put(i, new ArrayList<>());
                 localBorders.put(i, border);
-                globalGrids.put(i, new ArrayList<>());
             }
-
-            for (GDMGrid grid : grids) {
-                if (grid.centroid.getAttr()[1] < step_y) {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(0);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(1);
-                        lgrids.add(grid);
-                    }
-                } else {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(2);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(3);
-                        lgrids.add(grid);
-                    }
-                }
-            }
-
         } else if (parallelism == 5) {
-            double step_x = 3.0;
-            double step_y = 5.0;
+            double step_x = 0.3;
+            double step_y = 0.5;
             for (int i = 0; i < parallelism; i++) {
                 ArrayList<Double> border = new ArrayList<>();
                 if (i <= 1) {
@@ -147,98 +87,69 @@ public class ParallelGDPCluster {
                         border.add(step_x);
                     } else {
                         border.add(step_x);
-                        border.add(10.0);
+                        border.add(1.0);
                     }
                     border.add(0.0);
-                    border.add(5.0);
+                    border.add(0.5);
                 } else {
                     border.add((i - 2) * step_x);
                     if (i == 4) {
-                        border.add(10.0);
+                        border.add(1.0);
                     } else {
                         border.add((i - 1) * step_x);
                     }
-                    border.add(5.0);
-                    border.add(10.0);
+                    border.add(0.5);
+                    border.add(1.0);
                 }
                 localBorders.put(i, border);
-                localGrids.put(i, new ArrayList<>());
-                globalGrids.put(i, new ArrayList<>());
-            }
-            for (GDMGrid grid : grids) {
-                if (grid.centroid.getAttr()[1] < 5.0) {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(0);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(1);
-                        lgrids.add(grid);
-                    }
-                } else {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(2);
-                        lgrids.add(grid);
-                    } else if (grid.centroid.getAttr()[0] < step_x * 2) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(3);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(4);
-                        lgrids.add(grid);
-                    }
-                }
             }
         } else if (parallelism == 6) {
-            double step_x = 3.0;
+            double step_x = 0.3;
             for (int i = 0; i < parallelism; i++) {
                 ArrayList<Double> border = new ArrayList<>();
                 if (i < 3) {
                     border.add(i * step_x);
                     if (i == 2) {
-                        border.add(10.0);
+                        border.add(1.0);
                     } else {
                         border.add((i + 1) * step_x);
                     }
                     border.add(0.0);
-                    border.add(5.0);
+                    border.add(0.5);
                 } else {
                     border.add((i - 3) * step_x);
                     if (i == 5) {
-                        border.add(10.0);
+                        border.add(1.0);
                     } else {
                         border.add((i - 2) * step_x);
                     }
-                    border.add(5.0);
-                    border.add(10.0);
+                    border.add(0.5);
+                    border.add(1.0);
                 }
-                localGrids.put(i, new ArrayList<>());
                 localBorders.put(i, border);
-                globalGrids.put(i, new ArrayList<>());
             }
-            for (GDMGrid grid : grids) {
-                if (grid.centroid.getAttr()[1] < 5) {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(0);
-                        lgrids.add(grid);
-                    } else if (grid.centroid.getAttr()[0] < step_x * 2) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(1);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(2);
-                        lgrids.add(grid);
-                    }
-                } else {
-                    if (grid.centroid.getAttr()[0] < step_x) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(3);
-                        lgrids.add(grid);
-                    } else if (grid.centroid.getAttr()[0] < step_x * 2) {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(4);
-                        lgrids.add(grid);
-                    } else {
-                        ArrayList<GDMGrid> lgrids = localGrids.get(5);
-                        lgrids.add(grid);
-                    }
-                }
+        }
+
+    }
+
+
+    private void allocateGrids() {
+        grids.sort(new Comparator<GDMGrid>() {
+            @Override
+            public int compare(GDMGrid o1, GDMGrid o2) {
+                return Double.compare(o2.getDensity(), o1.getDensity());
             }
+        });
+        localGrids = new ConcurrentHashMap<>();
+        globalGrids = new ConcurrentHashMap<>();
+        for (int i = 0; i < parallelism; i++) {
+            localGrids.put(i, new ArrayList<>());
+            globalGrids.put(i, new ArrayList<>());
+        }
+        for (GDMGrid grid : grids) {
+            int partition = grid.getPartition();
+            ArrayList<GDMGrid> gridList = localGrids.get(partition);
+            gridList.add(grid);
         }
     }
 
@@ -324,8 +235,9 @@ public class ParallelGDPCluster {
         }
     }
 
-    private void process(double Dh) throws InterruptedException {
+    public void process(double Dh) throws InterruptedException {
         // 并行计算局部最短截距
+        allocateGrids();
         LocalDelta[] localDeltaThread = new LocalDelta[parallelism];
         CountDownLatch countDownLatch = new CountDownLatch(parallelism);
         for (int i = 0; i < parallelism; i++) {
@@ -358,27 +270,31 @@ public class ParallelGDPCluster {
         return clusters;
     }
 
+    public ArrayList<GDMGrid> getCenters() {
+        return centers;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         String filePath = "C:\\Users\\Celeste\\Desktop\\data\\overview.txt";
         PointManager pointManager = new PointManager();
-        pointManager.readPointsWithLabel(filePath);
+        pointManager.readPointsWithLabel(2, filePath);
 
         ArrayList<Point> points = pointManager.getPoints();
 
-        GridManager gridManager = new GridManager(1, 0.1);
+        ParallelGridManager gridManager = new ParallelGridManager(2, 1, 0.1);
         for (Point point : points)
             gridManager.mapToGrid(point);
 
         ArrayList<GDMGrid> grids = gridManager.getGrids();
 
-        ParallelGDPCluster parallelCluster = new ParallelGDPCluster(3, 2.5, grids);
+        ParallelGDPCluster parallelCluster = new ParallelGDPCluster(2, 2.5, grids);
         long st = System.currentTimeMillis();
         parallelCluster.process(gridManager.Dh);
         long ed = System.currentTimeMillis();
         System.out.println("ParallelGDP:" + (ed - st));
         //聚类结果显示模块
         ResultViewer resultViewer = new ResultViewer();
-        //resultViewer.showChart(parallelCluster.getClusters());
+        resultViewer.showChart(parallelCluster.getClusters());
     }
 
 }

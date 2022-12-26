@@ -27,6 +27,7 @@ class LocalDelta extends Thread {
     @Override
     public void run() {
         if (!grids.isEmpty()) {
+
             GDMGrid peakGrid = grids.get(0);
             for (int i = 1; i < grids.size(); i++) {
                 GDMGrid curGrid = grids.get(i);

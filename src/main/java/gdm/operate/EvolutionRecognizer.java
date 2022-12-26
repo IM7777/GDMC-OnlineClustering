@@ -167,7 +167,7 @@ public class EvolutionRecognizer {
             if (mergeOrSurvival.containsKey(yLabel)) {
                 ArrayList<Integer> list = mergeOrSurvival.get(yLabel);
                 if (list.size() == 1) {
-                    this.survivalList.add(yLabel);
+                    this.survivalList.add(yLabel);//判断自演化
                 } else if (list.size() > 1) {
                     this.mergeList.put(yLabel, list);
                 }

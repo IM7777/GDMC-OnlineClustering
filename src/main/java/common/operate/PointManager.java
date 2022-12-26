@@ -12,7 +12,7 @@ public class PointManager {
 
     private ArrayList<Point> points;
 
-    public void readPoints(String filePath) throws IOException {
+    public void readPoints(int dim, String filePath) throws IOException {
         points = new ArrayList<>();
         File file = new File(filePath);
 
@@ -23,8 +23,8 @@ public class PointManager {
             while ((line = br.readLine()) != null) {
                 if (line.length()==0) continue;
                 String[] seg = line.split(",");
-                double[] attr = new double[2];
-                for (int i = 0; i < attr.length; i++) {
+                double[] attr = new double[dim];
+                for (int i = 0; i < dim; i++) {
                     attr[i] = Double.parseDouble(seg[i]);
                 }
                 points.add(new Point(attr, id));
@@ -36,7 +36,7 @@ public class PointManager {
 
     }
 
-    public void readPointsWithLabel(String filePath) throws IOException {
+    public void readPointsWithLabel(int dim, String filePath) throws IOException {
         points = new ArrayList<>();
         File file = new File(filePath);
         try {
@@ -46,11 +46,11 @@ public class PointManager {
             while ((line = br.readLine()) != null) {
                 if (line.length()==0) continue;
                 String[] seg = line.split(",");
-                double[] attr = new double[2];
-                for (int i = 0; i < attr.length; i++) {
+                double[] attr = new double[dim];
+                for (int i = 0; i < dim; i++) {
                     attr[i] = Double.parseDouble(seg[i]);
                 }
-                int label = Integer.parseInt(seg[2]);
+                int label = Integer.parseInt(seg[dim]);
                 points.add(new Point(attr, id, label));
                 id++;
             }
@@ -65,7 +65,8 @@ public class PointManager {
     public void pointsInfo() {
         for (int i = 0; i < points.size(); i++) {
             Point point = points.get(i);
-            System.out.println(point);
+            point.standard();
+            //System.out.println(point);
         }
     }
 
@@ -77,9 +78,12 @@ public class PointManager {
 
     public static void main(String[] args) throws IOException {
         //格式：x, y, label
-        String filePath = "E:\\我的坚果云\\2 数据集\\aggregation\\aggregationNormal.txt";
+        String filePath = "/Users/jxm/Downloads/data/synthetic/syn.txt";
         PointManager pointProcess = new PointManager();
-        pointProcess.readPoints(filePath);
+        long st = System.currentTimeMillis();
+        pointProcess.readPointsWithLabel(2, filePath);
         pointProcess.pointsInfo();
+        long ed = System.currentTimeMillis();
+        System.out.println("标准化时间是："+(ed-st));
     }
 }

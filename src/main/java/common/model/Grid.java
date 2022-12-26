@@ -57,6 +57,15 @@ public class Grid implements Serializable {
         return Math.sqrt(distance);
     }
 
+    public double calVecDistance(Grid grid) {
+        double distance = 0.0;
+        int dim = vector.length;
+        for (int i = 0; i < dim; i++) {
+            distance += Math.pow(vector[i] - grid.vector[i], 2);
+        }
+        return Math.sqrt(distance);
+    }
+
     public double calDoubleDistance(Grid grid) {
         double doubleDistance = 0.0;
         int dim = vector.length;

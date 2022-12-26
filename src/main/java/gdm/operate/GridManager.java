@@ -5,6 +5,7 @@ import common.model.Point;
 import gdm.model.GDMGrid;
 
 import java.util.ArrayList;
+import java.util.DuplicateFormatFlagsException;
 
 import static common.util.Functions.log;
 
@@ -73,7 +74,7 @@ public class GridManager {
         Dh = totalDense / denseNum;
         Dl = totalSparse / sparseNum;
         int Mt = grids.size();
-        gap = (int) Math.floor(log(lambda, Math.min(Dl / Dh, (1 - Dh * Mt * (1 - lambda)) / (1 - Dl * Mt * (1 - lambda)))));
+        gap = (int) Math.floor(log(lambda, Math.max(Dl / Dh, (1 - Dh * sparseNum * (1 - lambda)) / (1 - Dl * sparseNum * (1 - lambda)))));
         gap = Math.max(gap, 1);
         grids.removeIf(grid -> grid.getDensity() < Dl);
     }

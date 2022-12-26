@@ -58,7 +58,7 @@ public class ESAGridManager{
             }
         }
         Du = totalNonSparseWeight / nonSparseNum;
-        grids.removeIf(grid -> grid.getDensity() < Dl);
+        grids.removeIf(grid -> grid.getDensity() < Dl*0.1);
     }
 
     public ArrayList<StdGrid> getGrids() {

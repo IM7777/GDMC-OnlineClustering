@@ -36,6 +36,7 @@ public class Metric {
     public String sourceFilePath;
     public String standardFilePath;
     public String metric;
+    public int dim;
     public double lambda;
     public double len;
     public ArrayList<Integer> timestamps;
@@ -43,10 +44,11 @@ public class Metric {
     public Metric() {
     }
 
-    private Metric(String sourceFilePath, String standardFilePath, String metric, double lambda, double len) throws IOException {
+    private Metric(String sourceFilePath, String standardFilePath, String metric, int dim, double lambda, double len) throws IOException {
         this.sourceFilePath = sourceFilePath;
         this.standardFilePath = standardFilePath;
         this.metric = metric;
+        this.dim = dim;
         this.lambda = lambda;
         this.len = len;
         this.timestamps = readTimestamps();
@@ -85,6 +87,9 @@ public class Metric {
         int TP_FP = computeTFP(sourceClusters);
         int TP_FN = computeTPFN(sourceClusters, standardClusters);
         int all = computeAll(sourceClusters);
+        if (all == 0) {
+            return 0;
+        }
         int FP = TP_FP - TP;
         int FN = TP_FN - TP;
         int TN = all - TP - FN - FP;
@@ -166,9 +171,48 @@ public class Metric {
         return truthLabel;
     }
 
-    private double getSilhouetteCoefficient(HashMap<Integer, Cluster<Grid>> sourceClusters, HashMap<Integer, Cluster<Grid>> standardClusters) {
-        double ans = 0.0;
-        return ans;
+    private double getSilhouetteCoefficient(HashMap<Integer, Cluster<Grid>> sourceClusters) {
+        double totalSi = 0.0;
+        int count=0;
+        for (Integer label1 : sourceClusters.keySet()) {
+            Cluster<Grid> cluster1 = sourceClusters.get(label1);
+            for (Grid grid : cluster1.getGrids()) {
+                double ai = getAi(grid, cluster1);
+                double bi = Double.MAX_VALUE;
+                for (Integer label2 : sourceClusters.keySet()) {
+                    if (label2 != label1) {
+                        Cluster<Grid> cluster2 = sourceClusters.get(label2);
+                        double currentBi = getBi(grid, cluster2);
+                        bi = Math.min(currentBi, bi);
+                    }
+                }
+                double si = (bi - ai) / Math.max(ai, bi);
+                totalSi += si;
+                count++;
+            }
+        }
+        return totalSi / count;
+    }
+
+    private double getAi(Grid grid, Cluster<Grid> cluster) {
+        ArrayList<Grid> grids = cluster.getGrids();
+        double totalDistance = 0.0;
+        for (Grid temp : grids) {
+            totalDistance += grid.calVecDistance(temp);
+        }
+        if (grids.size()==1)
+            return 1;
+        return totalDistance / (grids.size() - 1);
+    }
+
+
+    private double getBi(Grid grid, Cluster<Grid> cluster) {
+        ArrayList<Grid> grids = cluster.getGrids();
+        double totalDistance = 0.0;
+        for (Grid temp : grids) {
+            totalDistance += grid.calVecDistance(temp);
+        }
+        return totalDistance / grids.size();
     }
 
     private HashMap<Integer, Cluster<Grid>> getClusters(String sourceFilePath) throws IOException {
@@ -177,11 +221,11 @@ public class Metric {
         String line = null;
         while ((line = br.readLine()) != null) {
             String[] seg = line.split(",");
-            int[] vec = new int[2];
-            vec[0] = Integer.parseInt(seg[0]);
-            vec[1] = Integer.parseInt(seg[1]);
+            int[] vec = new int[dim];
+            for (int i = 0; i < dim; i++)
+                vec[i] = Integer.parseInt(seg[i]);
             Grid grid = new Grid(vec);
-            int label = Integer.parseInt(seg[2]);
+            int label = Integer.parseInt(seg[dim]);
             Cluster<Grid> cluster = clusters.getOrDefault(label, new Cluster<>(label));
             cluster.addGrid(grid);
             clusters.put(label, cluster);
@@ -192,29 +236,34 @@ public class Metric {
     public void process() throws IOException {
         ArrayList<Integer> timestamps = readTimestamps();
         HashMap<Integer, Double> results = new HashMap<>();
+        double sum = 0;
         for (int time : timestamps) {
             String sourceFile = sourceFilePath + lambda + "_" + len + "_" + time + ".txt";
-            String standardFile = standardFilePath + lambda + "_" + len + "_" + time + ".txt";
             HashMap<Integer, Cluster<Grid>> sourceClusters = getClusters(sourceFile);
-            HashMap<Integer, Cluster<Grid>> standardClusters = getClusters(standardFile);
             double res = 0.0;
-            if (metric.equals("Purity"))
-                res = getPurity(sourceClusters, standardClusters);
-            else if (metric.equals("RandIndex"))
-                res = getRandIndex(sourceClusters, standardClusters);
-            else if (metric.equals("SilhouetteCoefficient"))
-                res = getSilhouetteCoefficient(sourceClusters, standardClusters);
+            if (!standardFilePath.equals("")) {
+                String standardFile = standardFilePath + lambda + "_" + len + "_" + time + ".txt";
+                HashMap<Integer, Cluster<Grid>> standardClusters = getClusters(standardFile);
+                if (metric.equals("Purity"))
+                    res = getPurity(sourceClusters, standardClusters);
+                else if (metric.equals("RandIndex"))
+                    res = getRandIndex(sourceClusters, standardClusters);
+            }
+            else
+                res = getSilhouetteCoefficient(sourceClusters);
             System.out.println("时刻" + time + "的"+metric+"：" +res);
+            sum += res;
             results.put(time, res);
         }
-        //writeToFile(purities);
+        System.out.println("平均"+metric + "是" + (sum / results.size()));
+        //writeToFile(results, metric);
 
     }
 
-    private void writeToFile(HashMap<Integer, Double> purities) throws IOException {
-        String purityPath = sourceFilePath + lambda + "_" + len + "_purity.txt";
+    private void writeToFile(HashMap<Integer, Double> results, String metric) throws IOException {
+        String purityPath = sourceFilePath + lambda + "_" + len + "_" + metric + ".txt";
         BufferedWriter bw = new BufferedWriter(new FileWriter(purityPath));
-        for (Map.Entry<Integer, Double> entry : purities.entrySet()) {
+        for (Map.Entry<Integer, Double> entry : results.entrySet()) {
             String line = entry.getKey() + "," + entry.getValue() + "\n";
             bw.write(line);
         }
@@ -296,13 +345,19 @@ public class Metric {
 
 
     public static void main(String[] args) throws IOException {
-        //String source = "C:\\Users\\Celeste\\Desktop\\data\\result\\GDMC\\";
-        //String standard = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\gdmc\\";
+        String source = "C:\\Users\\Celeste\\Desktop\\data\\result\\GDMC\\synthetic\\";
+        String standard = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\gdmc\\synthetic\\";
 
-        String source = "C:\\Users\\Celeste\\Desktop\\data\\result\\ESA\\";
-        String standard = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\esa\\";
+        //String source = "C:\\Users\\Celeste\\Desktop\\data\\result\\ESA\\synthetic\\";
+        //String standard = "C:\\Users\\Celeste\\Desktop\\data\\result\\Standard\\esa\\synthetic\\";
+        //String standard = "";
 
-        Metric pc = new Metric(source, standard, "RandIndex", 0.998, 0.1);
+        /*
+        Purity
+        RandIndex
+        SilhouetteCoefficient
+         */
+        Metric pc = new Metric(source, standard, "Purity", 2, 0.998, 0.3);
         pc.process();
 
 

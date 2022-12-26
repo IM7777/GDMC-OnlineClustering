@@ -30,8 +30,8 @@ public class ResultViewer {
             double[][] data = new double[2][size];
             for (int i = 0; i < size; i++) {
                 GDMGrid grid = cluster.getGrids().get(i);
-                data[0][i] = grid.getCentroid().getAttr()[0];
-                data[1][i] = grid.getCentroid().getAttr()[1];
+                data[0][i] = grid.getCentroid().getAttr()[0]*0.1;
+                data[1][i] = grid.getCentroid().getAttr()[1]*0.1;
             }
             xyDataset.addSeries(label, data);
         }
@@ -45,11 +45,11 @@ public class ResultViewer {
 
         xyplot.setBackgroundPaint(new Color(255, 253, 246));
         ValueAxis vaaxis = xyplot.getDomainAxis();
-        vaaxis.setRange(0,10);
+        vaaxis.setRange(0,1);
         vaaxis.setAxisLineStroke(new BasicStroke(1.5f));
 
         ValueAxis yAxis = xyplot.getRangeAxis();
-        yAxis.setRange(0,10);
+        yAxis.setRange(0,1);
 
         ValueAxis va = xyplot.getDomainAxis(0);
         va.setAxisLineStroke(new BasicStroke(1.5f));
